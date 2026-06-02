@@ -31,6 +31,7 @@ public class GameEngine {
     private boolean betPlaced = false;
 
     public void startNewRound() {
+        currentPlayerIndex = 0;
         deck = new Deck();
         deck.shuffle();
         dealer.clearHand();

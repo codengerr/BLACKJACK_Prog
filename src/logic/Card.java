@@ -2,6 +2,7 @@ package logic;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -75,13 +76,18 @@ public class Card {
 
     static {
         try {
-            spriteSheet = ImageIO.read(new File("resources/Karten.png"));
-            // Beispiel: Schneide die Rückseite aus (musst die X/Y Pixel an dein Bild anpassen!)
-            // Wenn die Rückseite z.B. ganz am Ende ist:
-            BufferedImage back = spriteSheet.getSubimage(0, 4 * 315, 225, 315);
-            cardBackImage = new ImageIcon(back);
+            // 1. Das komplette Bild laden (kein Subimage mehr)
+            BufferedImage fullImage = ImageIO.read(new File("resources/CardBack.png"));
+
+            // 2. Das Bild auf 225x315 Pixel skalieren
+            // SCALE_SMOOTH sorgt dafür, dass das Bild beim Skalieren scharf bleibt
+            Image scaledImage = fullImage.getScaledInstance(225, 315, Image.SCALE_SMOOTH);
+
+            // 3. Das skaliere Image an das ImageIcon übergeben
+            cardBackImage = new ImageIcon(scaledImage);
+
         } catch (IOException e) {
-            System.out.println("FEHLER: Sprite Sheet konnte nicht geladen werden!");
+            System.out.println("FEHLER: Bild konnte nicht geladen werden!");
             e.printStackTrace();
         }
     }

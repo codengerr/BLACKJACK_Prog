@@ -31,6 +31,12 @@ public class GameWindow extends JFrame {
     private JLabel scoreLabel;
     private boolean gameScreenReady = false;
 
+    // NEU: Damit wir die Knöpfe in jeder Runde zurücksetzen können!
+    private JTextField betInputField;
+    private JButton setBetButton;
+    private JButton hitButton;
+    private JButton standButton;
+
     public GameWindow() {
         setTitle("Blackjack Casino");
         setSize(1980, 1020);
@@ -178,6 +184,7 @@ public class GameWindow extends JFrame {
             engine.setWindow(this);
 
             this.gameScreenReady = false; // Tastatur blockieren
+            prepareNewRoundUI();
             engine.startNewRound();
             cardLayout.show(mainContainer, "GAME");
 
@@ -250,16 +257,25 @@ public class GameWindow extends JFrame {
         leftPanel.setOpaque(false);
         JLabel betLabel = new JLabel("Dein Einsatz: ");
         betLabel.setForeground(Color.WHITE);
-        JTextField betInputField = new JTextField(4);
+
+        // FEHLER 1 BEHOBEN: Kein "JTextField" oder "JButton" mehr davor!
+        betInputField = new JTextField(4);
         betInputField.setFont(new Font("Arial", Font.BOLD, 16));
-        JButton setBetButton = new JButton("Einsatz bestätigen");
+        setBetButton = new JButton("Einsatz bestätigen");
         styleButton(setBetButton);
+
+        // FEHLER 2 BEHOBEN: Hier sind die fehlenden Zeilen von mir!
+        leftPanel.add(betLabel);
+        leftPanel.add(betInputField);
+        leftPanel.add(setBetButton);
 
         // --- MITTLERER BEREICH: SPIEL-AKTIONEN ---
         JPanel centerPanel = new JPanel();
         centerPanel.setOpaque(false);
-        JButton hitButton = new JButton("Hit (Ziehen)");
-        JButton standButton = new JButton("Stand (Bleiben)");
+
+        // HIER AUCH: Kein "JButton" mehr davor!
+        hitButton = new JButton("Hit (Ziehen)");
+        standButton = new JButton("Stand (Bleiben)");
         styleButton(hitButton);
         styleButton(standButton);
 
@@ -494,7 +510,7 @@ public class GameWindow extends JFrame {
         else {
             if (engine != null) {
                 this.gameScreenReady = false; // 1. Tastatur im Spiel SPERREN
-
+                prepareNewRoundUI();
                 engine.startNewRound();
                 cardLayout.show(mainContainer, "GAME");
 
@@ -542,5 +558,12 @@ public class GameWindow extends JFrame {
         }
         cardPanel.revalidate();
         cardPanel.repaint();
+    }
+    // NEU: Setzt das UI für eine komplett neue Runde zurück
+    public void prepareNewRoundUI() {
+        if (setBetButton != null) setBetButton.setEnabled(true);   // Einsatz-Knopf AN
+        if (hitButton != null) hitButton.setEnabled(false);        // Hit-Knopf AUS
+        if (standButton != null) standButton.setEnabled(false);    // Stand-Knopf AUS
+        if (betInputField != null) betInputField.setText("");      // Textfeld leeren
     }
 }
