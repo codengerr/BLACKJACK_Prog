@@ -1,22 +1,25 @@
 package logic;
 
+/**
+ * Definiert die Kartenwerte (von Zwei bis Ass) und deren Standard-Blackjack-Punktwert.
+ * * @author  [Dein Name]
+ * @version 2.0
+ */
 public enum Rank {
-    ASS(11),ZWEI(2), DREI(3), VIER(4), FÜNF(5), SECHS(6), SIEBEN(7), ACHT(8), NEUN(9), ZEHN(10),
-    BUBE(10),
-    DAME(10),
-    KOENIG(10);
-    // Ass erstmal 11 Punkte später wird nochmal geprüft ob Bust -> dann ein Punkt
+    ZWEI(2), DREI(3), VIER(4), FÜNF(5), SECHS(6), SIEBEN(7),
+    ACHT(8), NEUN(9), ZEHN(10), BUBE(10), DAME(10), KÖNIG(10), ASS(11);
 
-    // Das Attribut, das den Punktewert speichert
     private final int value;
 
-    // Der Konstruktor für das Enum (wird intern von Java aufgerufen)
     Rank(int value) {
         this.value = value;
     }
 
-    // Eine Getter-Methode, um den Wert später abzufragen
+    /**
+     * Gibt den numerischen Blackjack-Wert der Karte zurück.
+     * @return Punktwert als int.
+     */
     public int getValue() {
-        return value;
+        return this.value;
     }
 }
