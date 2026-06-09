@@ -17,7 +17,7 @@ import java.io.IOException;
  * Das Sprite-Sheet und das Rückseiten-Bild werden beim ersten Zugriff * einmalig geladen (Singleton-Pattern).
  * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class CardImageLoader {

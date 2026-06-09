@@ -2,28 +2,35 @@ package logic;
 
 /**
  * Repräsentiert den Dealer (Croupier) im Blackjack-Spiel.
- * Erbt von {@link Participant} und steuert seine Züge vollautomatisch.
- * * @author  [Dein Name]
+ * <p>
+ * Erbt Kartenverwaltung und Punkteberechnung von {@link Participant}.
+ * Der automatische Dealer-Zug wird vollständig von {@link GameEngine#startDealerTurn()}
+ * über einen Swing-Timer gesteuert – {@link #makeTurn(GameEngine)} bleibt daher leer.
+ * </p>
+ *
+ * @author  [Dein Name]
  * @version 1.0
  */
 public class Dealer extends Participant {
 
-    /** Der Punktwert, ab dem der Dealer laut Regelwerk stehen bleiben MUSS. */
+    /** Punktwert, ab dem der Dealer laut Regelwerk stehen bleiben muss. */
     public static final int DEALER_STAND_LIMIT = 17;
 
+    /**
+     * Erstellt einen neuen Dealer mit dem festen Namen "Dealer".
+     */
     public Dealer() {
         super("Dealer");
     }
 
     /**
-     * Führt den automatischen Zug des Dealers aus.
-     * Der Dealer zieht solange Karten, bis er mindestens 17 Punkte erreicht hat.
-     * * @param engine Die aktive {@link GameEngine}, von der Karten gezogen werden.
+     * Beim Dealer wird der Zug automatisch von {@link GameEngine} über einen
+     * Timer gesteuert. Diese Methode bleibt daher bewusst leer.
+     *
+     * @param engine Die aktive {@link GameEngine}.
      */
     @Override
     public void makeTurn(GameEngine engine) {
-        while (calculateScore() < DEALER_STAND_LIMIT) {
-            engine.dealerHit();
-        }
+        // Dealer-Logik läuft in GameEngine.startDealerTurn() via Timer
     }
 }

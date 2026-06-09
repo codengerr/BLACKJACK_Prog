@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * Punkteberechnung.
  * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public abstract class Participant {

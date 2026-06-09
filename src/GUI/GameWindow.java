@@ -1,11 +1,15 @@
 package GUI;
 
+import Saving.GameState;
+import Saving.SaveGameManager;
 import logic.Card;
 import logic.GameEngine;
+import logic.Player;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -15,7 +19,7 @@ import java.util.ArrayList;
  * {@link CardLayout} und kommuniziert bidirektional mit der {@link GameEngine}.
  * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class GameWindow extends JFrame {
@@ -24,14 +28,14 @@ public class GameWindow extends JFrame {
     // Konstanten
     // -------------------------------------------------------------------------
 
-    /** Verzögerung in ms, bevor der GameScreen nach einem Screen-Wechsel Tastatureingaben akzeptiert. */
-    private static final int INPUT_DELAY_MS = 200;
+    /** Verzögerung in ms nach Screen-Wechsel, bevor Tastatur wieder aktiv ist. */
+    private static final int INPUT_DELAY_MS   = 200;
 
     /** Blink-Intervall in ms für den Hinweistext auf dem Ergebnis-Screen. */
     private static final int BLINK_INTERVAL_MS = 600;
 
     // -------------------------------------------------------------------------
-    // Screen-Panels (CardLayout)
+    // Screens
     // -------------------------------------------------------------------------
 
     private JPanel setupScreen;
@@ -40,7 +44,7 @@ public class GameWindow extends JFrame {
     private JPanel bankruptScreen;
 
     // -------------------------------------------------------------------------
-    // Wiederverwendete UI-Elemente
+    // UI-Elemente
     // -------------------------------------------------------------------------
 
     private JTextArea  gameTextArea;
@@ -63,20 +67,14 @@ public class GameWindow extends JFrame {
     private GameEngine        engine;
     private ArrayList<String> currentBankrupts = new ArrayList<>();
     private boolean           isGameOver       = false;
-
-    /**
-     * Gibt an, ob der Game-Screen Tastatureingaben verarbeiten darf.
-     * Wird beim Screen-Wechsel kurz gesperrt, um versehentliche Doppel-Eingaben zu verhindern.
-     */
-    private boolean gameScreenReady = false;
+    private boolean           gameScreenReady  = false;
 
     // -------------------------------------------------------------------------
     // Konstruktor
     // -------------------------------------------------------------------------
 
     /**
-     * Erstellt und zeigt das Hauptfenster des Spiels.
-     * Alle Screens werden beim Start einmalig aufgebaut.
+     * Erstellt und zeigt das Hauptfenster.
      */
     public GameWindow() {
         setTitle("Blackjack Casino");
@@ -84,18 +82,18 @@ public class GameWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        cardLayout     = new CardLayout();
-        mainContainer  = new JPanel(cardLayout);
+        cardLayout    = new CardLayout();
+        mainContainer = new JPanel(cardLayout);
 
         buildSetupScreen();
         buildGameScreen();
         buildResultScreen();
         buildBankruptScreen();
 
-        mainContainer.add(setupScreen,   "SETUP");
-        mainContainer.add(gameScreen,    "GAME");
-        mainContainer.add(resultScreen,  "RESULTS");
-        mainContainer.add(bankruptScreen,"BANKRUPT");
+        mainContainer.add(setupScreen,    "SETUP");
+        mainContainer.add(gameScreen,     "GAME");
+        mainContainer.add(resultScreen,   "RESULTS");
+        mainContainer.add(bankruptScreen, "BANKRUPT");
 
         add(mainContainer);
         setVisible(true);
@@ -107,19 +105,13 @@ public class GameWindow extends JFrame {
     // =========================================================================
 
     /**
-     * Ein {@link JPanel}, das ein skalierbares Hintergrundbild zeichnet.
-     * Das Bild wächst automatisch mit der Fenstergröße mit.
+     * {@link JPanel} das ein skalierbares Hintergrundbild zeichnet.
      */
     static class BackgroundPanel extends JPanel {
-
-        /** Das geladene Hintergrundbild. */
         private final Image bgImage;
 
         /**
-         * Erstellt ein BackgroundPanel mit dem angegebenen Layout.
-         * Das Bild wird aus {@code resources/table.png} geladen.
-         *
-         * @param layout Das zu verwendende {@link LayoutManager}-Objekt.
+         * @param layout Das zu verwendende Layout.
          */
         public BackgroundPanel(LayoutManager layout) {
             super(layout);
@@ -147,7 +139,7 @@ public class GameWindow extends JFrame {
     // =========================================================================
 
     /**
-     * Wendet ein einheitliches dunkles Styling auf einen {@link JButton} an.
+     * Wendet einheitliches dunkles Styling auf einen Button an.
      *
      * @param btn Der zu stylende Button.
      */
@@ -161,19 +153,17 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Wechselt nach kurzer Verzögerung zum Game-Screen und gibt die Tastatur frei.
-     * Verhindert, dass ein Tastendruck vom vorherigen Screen durchdringt.
+     * Wechselt zum Game-Screen und gibt nach kurzer Verzögerung die Tastatur frei.
      */
     private void switchToGameWithDelay() {
         this.gameScreenReady = false;
         cardLayout.show(mainContainer, "GAME");
-
-        Timer delayTimer = new Timer(INPUT_DELAY_MS, e -> {
+        Timer t = new Timer(INPUT_DELAY_MS, e -> {
             this.gameScreenReady = true;
             gameScreen.requestFocusInWindow();
         });
-        delayTimer.setRepeats(false);
-        delayTimer.start();
+        t.setRepeats(false);
+        t.start();
     }
 
     // =========================================================================
@@ -181,12 +171,12 @@ public class GameWindow extends JFrame {
     // =========================================================================
 
     /**
-     * Erstellt den Setup-Screen mit Spieleranzahl-Auswahl und Start-Button.
+     * Erstellt den Setup-Screen mit Spieleranzahl-Auswahl, Start- und Lade-Button.
      */
     private void buildSetupScreen() {
         setupScreen = new BackgroundPanel(new GridBagLayout());
 
-        JPanel innerPanel = new JPanel(new GridLayout(3, 1, 20, 20));
+        JPanel innerPanel = new JPanel(new GridLayout(4, 1, 20, 20));
         innerPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("Willkommen im Blackjack Casino", SwingConstants.CENTER);
@@ -201,30 +191,31 @@ public class GameWindow extends JFrame {
         styleButton(startButton);
         startButton.setFont(new Font("Arial", Font.BOLD, 22));
 
-        playerSelect.addActionListener(e -> {
-            if (playerSelect.getSelectedIndex() == 4) {
-                startButton.setText("Spielerzahl wählen & Starten");
-            } else {
-                startButton.setText("Spiel Starten");
-            }
-        });
+        JButton loadButton = new JButton("Spielstand laden");
+        styleButton(loadButton);
+        loadButton.setFont(new Font("Arial", Font.BOLD, 18));
+        loadButton.setForeground(Color.ORANGE);
+
+        playerSelect.addActionListener(e ->
+                startButton.setText(playerSelect.getSelectedIndex() == 4
+                        ? "Spielerzahl wählen & Starten" : "Spiel Starten"));
 
         startButton.addActionListener(e -> handleStartButton(playerSelect));
+        loadButton.addActionListener(e  -> handleLoadButton());
 
         innerPanel.add(titleLabel);
         innerPanel.add(playerSelect);
         innerPanel.add(startButton);
+        innerPanel.add(loadButton);
         setupScreen.add(innerPanel);
     }
 
     /**
-     * Verarbeitet den Klick auf "Spiel Starten": fragt Spielerzahl und Namen ab
-     * und startet die {@link GameEngine}.
+     * Verarbeitet "Spiel Starten": fragt Spielerzahl und Namen ab, startet die Engine.
      *
-     * @param playerSelect Das Dropdown mit der Spieleranzahl-Auswahl.
+     * @param playerSelect Dropdown mit der Spieleranzahl.
      */
     private void handleStartButton(JComboBox<String> playerSelect) {
-        // 1. Spielerzahl bestimmen
         int playerCount;
         int selectedIndex = playerSelect.getSelectedIndex();
 
@@ -241,15 +232,14 @@ public class GameWindow extends JFrame {
                     return;
                 }
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Ungültige Eingabe! Bitte eine Zahl eintippen.");
+                JOptionPane.showMessageDialog(this, "Ungültige Eingabe!");
                 return;
             }
         }
 
-        // 2. Namen abfragen
         ArrayList<String> playerNames = new ArrayList<>();
-        int dialogResult = JOptionPane.showConfirmDialog(
-                this, "Möchtest du den Spielern eigene Namen geben?",
+        int dialogResult = JOptionPane.showConfirmDialog(this,
+                "Möchtest du den Spielern eigene Namen geben?",
                 "Namen eingeben?", JOptionPane.YES_NO_OPTION);
 
         for (int i = 1; i <= playerCount; i++) {
@@ -262,26 +252,53 @@ public class GameWindow extends JFrame {
             }
         }
 
-        // 3. Engine starten
         engine = new GameEngine(playerNames);
         engine.setWindow(this);
-
         prepareNewRoundUI();
         engine.startNewRound();
         switchToGameWithDelay();
     }
 
     /**
-     * Erstellt den Spiel-Screen mit Karten-Anzeige, Punktestand und Aktions-Buttons.
+     * Verarbeitet "Spielstand laden": öffnet den Lade-Dialog und stellt
+     * Namen und Guthaben aus dem gespeicherten Zustand wieder her.
+     */
+    private void handleLoadButton() {
+        LoadGameDialog dialog = new LoadGameDialog(this);
+        dialog.setVisible(true);
+
+        GameState loaded = dialog.getSelectedState();
+        if (loaded == null) return;
+
+        ArrayList<String> names = new ArrayList<>();
+        for (GameState.PlayerEntry entry : loaded.getPlayers()) {
+            names.add(entry.getName());
+        }
+
+        engine = new GameEngine(names);
+
+        for (int i = 0; i < engine.getPlayers().size(); i++) {
+            engine.getPlayers().get(i).setBalance(loaded.getPlayers().get(i).getBalance());
+        }
+
+        engine.setWindow(this);
+        engine.setLoadedSaveId(loaded.getId()); // damit Engine den Save bei Game-Over löscht
+        prepareNewRoundUI();
+        engine.startNewRound();
+        switchToGameWithDelay();
+    }
+
+    /**
+     * Erstellt den Spiel-Screen.
      */
     private void buildGameScreen() {
         gameScreen = new BackgroundPanel(new BorderLayout());
 
-        // --- TOP: Info-Text + Guthaben ---
+        // --- TOP ---
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
-        gameTextArea = new JTextArea("Bitte setze deinen Einsatz, um die Runde zu starten!");
+        gameTextArea = new JTextArea("Bitte setze deinen Einsatz!");
         gameTextArea.setEditable(false);
         gameTextArea.setOpaque(false);
         gameTextArea.setForeground(Color.WHITE);
@@ -299,10 +316,10 @@ public class GameWindow extends JFrame {
         balanceLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 20));
         balanceLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        topPanel.add(scrollPane, BorderLayout.CENTER);
+        topPanel.add(scrollPane,   BorderLayout.CENTER);
         topPanel.add(balanceLabel, BorderLayout.EAST);
 
-        // --- CENTER: Score + Karten ---
+        // --- CENTER ---
         JPanel centerWrapper = new JPanel(new BorderLayout());
         centerWrapper.setOpaque(false);
 
@@ -315,28 +332,31 @@ public class GameWindow extends JFrame {
         cardPanel.setOpaque(false);
 
         centerWrapper.add(scoreLabel, BorderLayout.NORTH);
-        centerWrapper.add(cardPanel, BorderLayout.CENTER);
+        centerWrapper.add(cardPanel,  BorderLayout.CENTER);
 
-        // --- BOTTOM: Buttons ---
+        // --- BOTTOM ---
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setOpaque(false);
 
-        // Einsatz (links)
+        // Links: Einsatz
         JPanel leftPanel = new JPanel();
         leftPanel.setOpaque(false);
+
         JLabel betLabel = new JLabel("Dein Einsatz: ");
         betLabel.setForeground(Color.WHITE);
 
         betInputField = new JTextField(4);
         betInputField.setFont(new Font("Arial", Font.BOLD, 16));
+
         setBetButton = new JButton("Einsatz bestätigen");
         styleButton(setBetButton);
+        setBetButton.addActionListener(e -> handleConfirmBet());
 
         leftPanel.add(betLabel);
         leftPanel.add(betInputField);
         leftPanel.add(setBetButton);
 
-        // Hit / Stand (mitte)
+        // Mitte: Hit / Stand
         JPanel centerPanel = new JPanel();
         centerPanel.setOpaque(false);
 
@@ -347,26 +367,31 @@ public class GameWindow extends JFrame {
         hitButton.setEnabled(false);
         standButton.setEnabled(false);
 
-        setBetButton.addActionListener(e -> handleSetBet());
         hitButton.addActionListener(e   -> { if (engine != null && gameScreenReady) engine.playerHit(); });
         standButton.addActionListener(e -> { if (engine != null && gameScreenReady) engine.playerStand(); });
 
         centerPanel.add(hitButton);
         centerPanel.add(standButton);
 
-        // Menü / Beenden (rechts)
+        // Rechts: Speichern / Menü / Beenden
         JPanel rightPanel = new JPanel();
         rightPanel.setOpaque(false);
+
+        JButton saveButton = new JButton("Speichern");
         JButton menuButton = new JButton("Hauptmenü");
         JButton exitButton = new JButton("Beenden");
+        styleButton(saveButton);
         styleButton(menuButton);
         styleButton(exitButton);
+        saveButton.setForeground(new Color(100, 200, 255));
         menuButton.setForeground(Color.ORANGE);
         exitButton.setForeground(Color.RED);
 
+        saveButton.addActionListener(e -> handleSave());
         menuButton.addActionListener(e -> { engine = null; cardLayout.show(mainContainer, "SETUP"); });
         exitButton.addActionListener(e -> System.exit(0));
 
+        rightPanel.add(saveButton);
         rightPanel.add(menuButton);
         rightPanel.add(exitButton);
 
@@ -384,38 +409,31 @@ public class GameWindow extends JFrame {
 
         im.put(KeyStroke.getKeyStroke("SPACE"), "hitAction");
         am.put("hitAction", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 if (engine != null && gameScreenReady && hitButton.isEnabled()) engine.playerHit();
             }
         });
 
         im.put(KeyStroke.getKeyStroke("ENTER"), "standAction");
         am.put("standAction", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 if (engine != null && gameScreenReady && standButton.isEnabled()) engine.playerStand();
             }
         });
     }
 
     /**
-     * Verarbeitet die Bestätigung des Einsatzes durch den Spieler.
-     * Aktiviert Hit/Stand-Buttons und informiert die Engine.
+     * Verarbeitet die Einsatz-Bestätigung.
+     * Delegiert an {@link GameEngine#confirmBet(int)}, die dann automatisch
+     * den nächsten Spieler oder die Spielphase startet.
      */
-    private void handleSetBet() {
+    private void handleConfirmBet() {
         try {
-            int neuerEinsatz = Integer.parseInt(betInputField.getText().trim());
-            if (engine == null || neuerEinsatz <= 0) return;
+            int betrag = Integer.parseInt(betInputField.getText().trim());
+            if (engine == null || betrag <= 0) return;
 
-            engine.setBet(neuerEinsatz);
+            engine.confirmBet(betrag);
             betInputField.setText("");
-
-            hitButton.setEnabled(true);
-            standButton.setEnabled(true);
-            setBetButton.setEnabled(false);
-
-            engine.startAfterBet();
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Bitte nur ganze Zahlen eingeben!");
@@ -425,7 +443,28 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Erstellt den Ergebnis-Screen mit Rundenergebnis und "Weiter"-Optionen.
+     * Speichert den aktuellen Spielstand.
+     */
+    private void handleSave() {
+        if (engine == null) return;
+        ArrayList<GameState.PlayerEntry> entries = new ArrayList<>();
+        for (Player p : engine.getPlayers()) {
+            entries.add(new GameState.PlayerEntry(p.getName(), p.getBalance()));
+        }
+        try {
+            String id = SaveGameManager.saveGame(entries, null);
+            JOptionPane.showMessageDialog(this,
+                    "Spielstand gespeichert!\nID: " + id, "Gespeichert",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Fehler beim Speichern: " + ex.getMessage(), "Fehler",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Erstellt den Ergebnis-Screen.
      */
     private void buildResultScreen() {
         resultScreen = new JPanel(new BorderLayout());
@@ -469,20 +508,16 @@ public class GameWindow extends JFrame {
 
         resultScreen.setFocusable(true);
         resultScreen.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                checkNextScreen();
-            }
+            @Override public void keyPressed(java.awt.event.KeyEvent e) { checkNextScreen(); }
         });
 
-        // Blink-Timer für den Hinweistext
         new Timer(BLINK_INTERVAL_MS, e ->
                 instructionLabel.setVisible(!instructionLabel.isVisible())
         ).start();
     }
 
     /**
-     * Erstellt den Bankrott-Screen, der einem ausgeschiedenen Spieler angezeigt wird.
+     * Erstellt den Bankrott-Screen.
      */
     private void buildBankruptScreen() {
         bankruptScreen = new JPanel(new BorderLayout());
@@ -504,21 +539,21 @@ public class GameWindow extends JFrame {
     }
 
     // =========================================================================
-    // ÖFFENTLICHE UPDATE-METHODEN (werden von GameEngine aufgerufen)
+    // ÖFFENTLICHE UPDATE-METHODEN (von GameEngine aufgerufen)
     // =========================================================================
 
     /**
-     * Aktualisiert die Guthaben- und Einsatz-Anzeige.
+     * Aktualisiert die Guthaben-Anzeige oben rechts.
      *
-     * @param balance    Das aktuelle Guthaben in Euro.
-     * @param currentBet Der aktuelle Einsatz in Euro.
+     * @param balance    Aktuelles Guthaben in Euro.
+     * @param currentBet Aktueller Einsatz in Euro.
      */
     public void updateBalanceView(int balance, int currentBet) {
         balanceLabel.setText("Bank: " + balance + " € (Einsatz: " + currentBet + " €)");
     }
 
     /**
-     * Aktualisiert den Informationstext im Spiel-Screen.
+     * Aktualisiert den Info-Text im Spiel-Screen.
      *
      * @param text Der anzuzeigende Text.
      */
@@ -527,21 +562,18 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Aktualisiert den angezeigten Punktestand.
+     * Aktualisiert den Punktestand-Label.
      *
-     * @param score Der neue Punktestand.
+     * @param score Der neue Punktwert.
      */
     public void updateScore(int score) {
-        if (scoreLabel != null) {
-            scoreLabel.setText("Wert: " + score);
-        }
+        if (scoreLabel != null) scoreLabel.setText("Wert: " + score);
     }
 
     /**
-     * Zeigt die Karten einer Hand als Bilder an.
-     * Bilder werden über {@link CardImageLoader} geladen – nicht aus {@code Card} direkt.
+     * Zeigt Karten einer Hand als Bilder an.
      *
-     * @param hand Die anzuzeigende Hand als {@link ArrayList} von {@link Card}-Objekten.
+     * @param hand Die anzuzeigende Hand.
      */
     public void updateCardImages(ArrayList<Card> hand) {
         cardPanel.removeAll();
@@ -556,9 +588,9 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Zeigt eine bestimmte Anzahl Karten-Rückseiten an (vor dem Aufdecken).
+     * Zeigt {@code count} Karten-Rückseiten an.
      *
-     * @param count Anzahl der anzuzeigenden Rückseiten.
+     * @param count Anzahl der Rückseiten.
      */
     public void updateCardImagesHidden(int count) {
         cardPanel.removeAll();
@@ -571,11 +603,33 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Wechselt zum Ergebnis-Screen und zeigt die Rundenauswertung an.
+     * Schaltet zwischen Einsatz-Phase und Spielphase um.
+     * <p>
+     * Wird von {@link GameEngine} aufgerufen:
+     * {@code showBetUI(true)} → Einsatz-Feld aktiv, Hit/Stand deaktiviert.<br>
+     * {@code showBetUI(false)} → Einsatz-Feld deaktiviert, Hit/Stand aktiv.
+     * </p>
      *
-     * @param resultText  Der anzuzeigende Ergebnistext.
-     * @param bankrupts   Liste der Spielernamen, die pleite sind.
-     * @param gameOver    {@code true}, wenn alle Spieler ausgeschieden sind.
+     * @param betPhase {@code true} während der Einsatz-Phase, {@code false} während der Spielphase.
+     */
+    public void showBetUI(boolean betPhase) {
+        setBetButton.setEnabled(betPhase);
+        betInputField.setEnabled(betPhase);
+        betInputField.setText("");
+        hitButton.setEnabled(!betPhase);
+        standButton.setEnabled(!betPhase);
+
+        if (betPhase) {
+            betInputField.requestFocusInWindow();
+        }
+    }
+
+    /**
+     * Wechselt zum Ergebnis-Screen.
+     *
+     * @param resultText  Ergebnistext der Runde.
+     * @param bankrupts   Namen der pleite gegangenen Spieler.
+     * @param gameOver    {@code true} wenn alle Spieler ausgeschieden sind.
      */
     public void showResults(String resultText, ArrayList<String> bankrupts, boolean gameOver) {
         this.currentBankrupts = new ArrayList<>(bankrupts);
@@ -588,31 +642,43 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Setzt alle UI-Elemente für eine neue Runde zurück.
-     * Deaktiviert Hit/Stand, aktiviert den Einsatz-Button.
+     * Setzt alle UI-Elemente für den Start einer neuen Runde zurück.
+     * Einsatz-Phase aktiv, Spielphase deaktiviert.
      */
     public void prepareNewRoundUI() {
         if (setBetButton  != null) setBetButton.setEnabled(true);
+        if (betInputField != null) { betInputField.setEnabled(true); betInputField.setText(""); }
         if (hitButton     != null) hitButton.setEnabled(false);
         if (standButton   != null) standButton.setEnabled(false);
-        if (betInputField != null) betInputField.setText("");
     }
 
     // =========================================================================
-    // PRIVATE NAVIGATIONS-LOGIK
+    // NAVIGATIONS-LOGIK
     // =========================================================================
 
     /**
-     * Entscheidet, welcher Screen als Nächstes angezeigt wird:
+     * Entscheidet welcher Screen als Nächstes gezeigt wird:
      * <ol>
-     *   <li>Bankrott-Screen, falls noch Spieler ausgeschieden sind.</li>
-     *   <li>Setup-Screen mit Meldung, falls alle Spieler pleite sind.</li>
-     *   <li>Neues Spiel, falls noch Spieler übrig sind.</li>
+     *   <li>Einzelne Bankrott-Screens abarbeiten.</li>
+     *   <li>Nach dem letzten Bankrott-Screen bei Game-Over: finalen Casino-Screen zeigen.</li>
+     *   <li>Noch Spieler übrig → neue Runde starten.</li>
+     *   <li>engine == null (nach finalem Screen) → Setup.</li>
      * </ol>
      */
     private void checkNextScreen() {
+
+        // 1. Noch Bankrott-Screens ausstehend
         if (!currentBankrupts.isEmpty()) {
             String name = currentBankrupts.remove(0);
+
+            // Balance sofort auf nächsten lebenden Spieler umschalten
+            if (engine != null && !engine.getPlayers().isEmpty()) {
+                Player next = engine.getPlayers().get(0);
+                updateBalanceView(next.getBalance(), next.getCurrentBet());
+            } else {
+                updateBalanceView(0, 0);
+            }
+
             dramaTextArea.setText(
                     "  ACHTUNG: " + name.toUpperCase() + "\n\n" +
                             "  GUTHABEN: 0 €\n\n" +
@@ -621,16 +687,35 @@ public class GameWindow extends JFrame {
                             "  Du bist aus dem Spiel ausgeschieden."
             );
             cardLayout.show(mainContainer, "BANKRUPT");
+            return;
+        }
 
-        } else if (isGameOver) {
-            JOptionPane.showMessageDialog(this, "Alle Spieler sind pleite! Das Spiel ist vorbei.");
-            engine = null;
-            cardLayout.show(mainContainer, "SETUP");
+        // 2. Alle Bankrott-Screens weg + Game Over → finaler Screen
+        if (isGameOver) {
+            isGameOver = false; // Reset damit nächster Klick in Zweig 4 landet
+            engine     = null;  // Spielstand wurde bereits in GameEngine gelöscht
 
-        } else if (engine != null) {
+            dramaTextArea.setText(
+                    "  S P I E L E N D E\n\n" +
+                            "  Das Casino hat gewonnen.\n\n" +
+                            "  Alle Spieler sind pleite.\n" +
+                            "  Euer Spielstand wurde gelöscht.\n\n" +
+                            "  Das Casino wirft euch alle raus.\n" +
+                            "  Kommt nicht wieder."
+            );
+            cardLayout.show(mainContainer, "BANKRUPT");
+            return;
+        }
+
+        // 3. Noch Spieler übrig → neue Runde
+        if (engine != null) {
             prepareNewRoundUI();
             engine.startNewRound();
             switchToGameWithDelay();
+            return;
         }
+
+        // 4. engine == null → nach finalem Screen zurück zum Setup
+        cardLayout.show(mainContainer, "SETUP");
     }
 }

@@ -9,7 +9,7 @@ package logic;
  * dient hier nur als Auslöser, damit die Engine den richtigen Spieler aktiviert.
  * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class Player extends Participant {
@@ -71,6 +71,18 @@ public class Player extends Participant {
      */
     public int getCurrentBet() {
         return currentBet;
+    }
+
+    /**
+     * Setzt das Guthaben direkt auf einen bestimmten Wert.
+     * Wird ausschließlich beim Laden eines Spielstands verwendet,
+     * um das gespeicherte Guthaben wiederherzustellen.
+     * Negative Werte werden auf 0 begrenzt.
+     *
+     * @param balance Das wiederherzustellende Guthaben in Euro.
+     */
+    public void setBalance(int balance) {
+        this.balance = Math.max(0, balance);
     }
 
     /**

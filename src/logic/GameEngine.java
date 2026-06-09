@@ -1,9 +1,10 @@
 package logic;
 
 import GUI.GameWindow;
-
+import Saving.SaveGameManager;
 
 import javax.swing.Timer;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -12,8 +13,17 @@ import java.util.ArrayList;
  * Verwaltet Deck, Spielerliste und Dealer, steuert den Rundenablauf
  * und kommuniziert Ergebnisse an die {@link GameWindow GUI-Schicht}.
  * </p>
+ * <p>
+ * Rundenablauf:
+ * <ol>
+ *   <li>Karten werden verdeckt ausgeteilt.</li>
+ *   <li>Jeder Spieler setzt seinen Einsatz ({@link #setcurrentBet()}).</li>
+ *   <li>Alle Einsätze gesetzt → Karten aufgedeckt, Spielzüge beginnen.</li>
+ *   <li>Dealer zieht automatisch, danach Auswertung.</li>
+ * </ol>
+ * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class GameEngine {
@@ -25,30 +35,29 @@ public class GameEngine {
     /** Punktwert, ab dem der Dealer stehen bleiben muss. */
     private static final int DEALER_STAND_VALUE = 17;
 
-    /** Intervall in ms, in dem der Dealer eine Karte nach der anderen aufdeckt. */
+    /** Intervall in ms zwischen den Dealer-Karten. */
     private static final int DEALER_TIMER_MS = 800;
 
     // -------------------------------------------------------------------------
     // Felder
     // -------------------------------------------------------------------------
 
-    /** Das Kartendeck für die aktuelle Runde. */
-    private Deck deck;
-
-    /** Liste aller aktiven Spieler. */
+    private Deck              deck;
     private ArrayList<Player> players;
+    private Dealer            dealer;
+    private GameWindow        window;
+    private String            loadedSaveId = null;
 
-    /** Der Dealer (Computer-Gegner). */
-    private Dealer dealer;
+    /**
+     * Index des Spielers, der gerade seinen Einsatz setzt (Bet-Phase).
+     * Läuft von 0 bis players.size()-1, dann startet die Spielphase.
+     */
+    private int betPlayerIndex;
 
-    /** Index des Spielers, der gerade am Zug ist. */
+    /**
+     * Index des Spielers, der gerade am Zug ist (Spielphase).
+     */
     private int currentPlayerIndex;
-
-    /** Referenz auf das GUI-Fenster (darf {@code null} sein). */
-    private GameWindow window;
-
-    /** Gibt an, ob der Einsatz für diese Runde bereits gesetzt wurde. */
-    private boolean betPlaced;
 
     // -------------------------------------------------------------------------
     // Konstruktor
@@ -57,13 +66,12 @@ public class GameEngine {
     /**
      * Erstellt eine neue GameEngine mit einer dynamischen Spielerliste.
      *
-     * @param playerNames Liste der Spielernamen; für jeden Namen wird ein {@link Player} erstellt.
+     * @param playerNames Namen der Spieler; für jeden wird ein {@link Player} erstellt.
      */
     public GameEngine(ArrayList<String> playerNames) {
         this.players = new ArrayList<>();
         this.dealer  = new Dealer();
         this.deck    = new Deck();
-
         for (String name : playerNames) {
             this.players.add(new Player(name));
         }
@@ -73,14 +81,19 @@ public class GameEngine {
     // Setter
     // -------------------------------------------------------------------------
 
-    /**
-     * Setzt die Referenz auf das GUI-Fenster.
-     * Muss nach der Konstruktion aufgerufen werden, bevor die Runde startet.
-     *
-     * @param window Das aktive {@link GameWindow}.
-     */
+    /** @param window Das aktive {@link GameWindow}. */
     public void setWindow(GameWindow window) {
         this.window = window;
+    }
+
+    /**
+     * Setzt die ID des geladenen Spielstands.
+     * Bei Game-Over wird dieser Spielstand automatisch gelöscht.
+     *
+     * @param id Spielstand-ID oder {@code null} für ein neues Spiel.
+     */
+    public void setLoadedSaveId(String id) {
+        this.loadedSaveId = id;
     }
 
     // -------------------------------------------------------------------------
@@ -88,13 +101,12 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Startet eine neue Runde: Deck wird neu gemischt, Hände geleert,
-     * Karten verteilt. Die GUI zeigt zunächst nur Rückseiten an,
-     * bis der Spieler seinen Einsatz gesetzt hat.
+     * Startet eine neue Runde: Karten werden verdeckt ausgeteilt,
+     * dann beginnt die Einsatz-Phase beim ersten Spieler.
      */
     public void startNewRound() {
+        betPlayerIndex     = 0;
         currentPlayerIndex = 0;
-        betPlaced          = false;
 
         deck = new Deck();
         deck.refillAndShuffle();
@@ -104,7 +116,6 @@ public class GameEngine {
             p.clearHand();
         }
 
-        // Zwei Karten für alle austeilen
         for (int i = 0; i < 2; i++) {
             dealer.addCard(deck.drawCard());
             for (Player p : players) {
@@ -112,36 +123,76 @@ public class GameEngine {
             }
         }
 
+        // Einsatz-Phase starten: Karten bleiben verdeckt
         if (window != null) {
             window.updateCardImagesHidden(2);
-            window.updateGameView("Bitte setze deinen Einsatz, um die Karten umzudrehen!");
+            startBetPhase();
         }
     }
 
     /**
-     * Wird aufgerufen, sobald der Spieler seinen Einsatz bestätigt hat.
-     * Deckt die Karten auf und startet den ersten Spielerzug.
+     * Startet die Einsatz-Phase: zeigt dem aktuellen Spieler das Einsatz-UI
+     * und wartet auf seine Eingabe.
      */
-    public void startAfterBet() {
-        betPlaced          = true;
-        currentPlayerIndex = 0;
-        nextPlayerTurn();
+    private void startBetPhase() {
+        if (betPlayerIndex < players.size()) {
+            Player betPlayer = players.get(betPlayerIndex);
+            if (window != null) {
+                window.updateBalanceView(betPlayer.getBalance(), betPlayer.getCurrentBet());
+                window.updateGameView(betPlayer.getName() + ", setze deinen Einsatz!\n\n"
+                        + "Guthaben: " + betPlayer.getBalance() + "€\n"
+                        + "Mindest-Einsatz: " + Player.MIN_BET + "€");
+                window.showBetUI(true);  // Einsatz-Felder AN, Hit/Stand AUS
+            }
+        }
     }
 
     /**
-     * Aktiviert den nächsten Spieler in der Liste.
+     * Bestätigt den Einsatz des aktuellen Bet-Spielers und geht zum nächsten.
+     * Haben alle Spieler gesetzt, beginnt die Spielphase.
+     *
+     * @param amount Der Einsatz in Euro.
+     * @throws IllegalArgumentException wenn der Betrag ungültig ist.
+     */
+    public void confirmBet(int amount) {
+        Player betPlayer = players.get(betPlayerIndex);
+        betPlayer.setCurrentBet(amount); // wirft IllegalArgumentException bei ungültigem Wert
+
+        if (window != null) {
+            window.updateBalanceView(betPlayer.getBalance(), betPlayer.getCurrentBet());
+        }
+
+        betPlayerIndex++;
+
+        if (betPlayerIndex < players.size()) {
+            // Nächster Spieler setzt seinen Einsatz
+            startBetPhase();
+        } else {
+            // Alle haben gesetzt → Karten aufdecken, Spielphase starten
+            currentPlayerIndex = 0;
+            if (window != null) {
+                window.showBetUI(false); // Einsatz-Felder AUS, Hit/Stand AN
+            }
+            nextPlayerTurn();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Spielphase
+    // -------------------------------------------------------------------------
+
+    /**
+     * Aktiviert den nächsten Spieler.
      * Sind alle Spieler fertig, beginnt der Dealer-Zug.
      */
     public void nextPlayerTurn() {
         if (currentPlayerIndex < players.size()) {
             Player active = players.get(currentPlayerIndex);
 
-            String uiText = active.getName() + " ist am Zug.\n\n"
-                    + "Aktueller Wert: " + active.calculateScore() + "\n\n"
-                    + "Was möchtest du tun?";
-
             if (window != null) {
-                window.updateGameView(uiText);
+                window.updateGameView(active.getName() + " ist am Zug.\n\n"
+                        + "Aktueller Wert: " + active.calculateScore() + "\n\n"
+                        + "Was möchtest du tun?");
                 window.updateCardImages(active.getHand());
                 window.updateBalanceView(active.getBalance(), active.getCurrentBet());
             }
@@ -149,9 +200,8 @@ public class GameEngine {
             active.makeTurn(this);
 
         } else {
-            // Alle Spieler fertig → prüfen ob alle überkauft sind
-            boolean allBust = players.stream().allMatch(p -> p.calculateScore() > Participant.BLACKJACK_VALUE);
-
+            boolean allBust = players.stream()
+                    .allMatch(p -> p.calculateScore() > Participant.BLACKJACK_VALUE);
             if (allBust) {
                 handleAllPlayersBust();
             } else {
@@ -165,8 +215,7 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Der aktive Spieler zieht eine weitere Karte ("Hit").
-     * Bei Überkauf oder Blackjack wird der Zug automatisch beendet.
+     * Der aktive Spieler zieht eine Karte ("Hit").
      */
     public void playerHit() {
         Player active = players.get(currentPlayerIndex);
@@ -178,35 +227,27 @@ public class GameEngine {
         }
 
         if (newScore > Participant.BLACKJACK_VALUE) {
-            // Überkauft
-            if (window != null) {
-                window.updateGameView(active.getName() + " hat sich überkauft! (" + newScore + " Punkte)");
-            }
+            if (window != null) window.updateGameView(
+                    active.getName() + " hat sich überkauft! (" + newScore + " Punkte)");
             playerStand();
 
         } else if (newScore == Participant.BLACKJACK_VALUE) {
-            // Perfekte 21
-            if (window != null) {
-                window.updateGameView(active.getName() + " hat die perfekte 21 getroffen!\n"
-                        + "Der Zug wird automatisch beendet.");
-            }
+            if (window != null) window.updateGameView(
+                    active.getName() + " hat die perfekte 21!\nZug wird automatisch beendet.");
             playerStand();
 
         } else {
-            // Weiterspielen
-            if (window != null) {
-                window.updateGameView(active.getName() + " zieht eine Karte.\n\n"
-                        + "Neue Hand: " + active.getHand() + "\n"
-                        + "Aktueller Wert: " + newScore + "\n\n"
-                        + "Was möchtest du tun?");
-            }
+            if (window != null) window.updateGameView(
+                    active.getName() + " zieht eine Karte.\n\n"
+                            + "Neue Hand: " + active.getHand() + "\n"
+                            + "Aktueller Wert: " + newScore + "\n\n"
+                            + "Was möchtest du tun?");
             active.makeTurn(this);
         }
     }
 
     /**
      * Der aktive Spieler bleibt stehen ("Stand").
-     * Der nächste Spieler oder der Dealer ist an der Reihe.
      */
     public void playerStand() {
         currentPlayerIndex++;
@@ -218,24 +259,19 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Startet den automatischen Dealer-Zug mit einem Swing-Timer.
-     * Der Dealer zieht Karten in Abständen von {@value #DEALER_TIMER_MS} ms,
-     * bis er {@value #DEALER_STAND_VALUE} oder mehr Punkte hat.
+     * Startet den automatischen Dealer-Zug mit Swing-Timer.
      */
     private void startDealerTurn() {
-        if (window != null) {
-            window.updateGameView("Der Dealer deckt auf...");
-        }
+        if (window != null) window.updateGameView("Der Dealer deckt auf...");
 
         Timer dealerTimer = new Timer(DEALER_TIMER_MS, null);
         dealerTimer.addActionListener(e -> {
-            int dealerScore = dealer.calculateScore();
-
-            if (dealerScore < DEALER_STAND_VALUE) {
-                dealerHit();
+            if (dealer.calculateScore() < DEALER_STAND_VALUE) {
+                dealer.addCard(deck.drawCard());
                 if (window != null) {
                     window.updateCardImages(dealer.getHand());
-                    window.updateGameView("Der Dealer zieht...\nAktueller Wert: " + dealer.calculateScore());
+                    window.updateGameView("Der Dealer zieht...\nAktueller Wert: "
+                            + dealer.calculateScore());
                 }
             } else {
                 dealerTimer.stop();
@@ -245,104 +281,67 @@ public class GameEngine {
         dealerTimer.start();
     }
 
-    /**
-     * Der Dealer zieht eine Karte vom Deck.
-     * Wird vom Timer in {@link #startDealerTurn()} aufgerufen.
-     */
-    public void dealerHit() {
-        dealer.addCard(deck.drawCard());
-    }
-
-    // -------------------------------------------------------------------------
-    // Einsatz
-    // -------------------------------------------------------------------------
-
-    /**
-     * Setzt den Einsatz des aktuell aktiven Spielers.
-     * Der Betrag wird gegen das Guthaben des Spielers validiert.
-     *
-     * @param amount Der gewünschte Einsatz in Euro (muss &gt; 0 und ≤ Guthaben sein).
-     */
-    public void setBet(int amount) {
-        Player active = players.get(currentPlayerIndex);
-        try {
-            active.setCurrentBet(amount);
-            if (window != null) {
-                window.updateBalanceView(active.getBalance(), active.getCurrentBet());
-            }
-        } catch (IllegalArgumentException e) {
-            // Fehlermeldung wird von der GUI (handleSetBet) angezeigt
-            throw e;
-        }
-    }
-
     // -------------------------------------------------------------------------
     // Auswertung
     // -------------------------------------------------------------------------
 
     /**
-     * Sonderfall: Alle Spieler haben sich überkauft.
-     * Der Dealer gewinnt automatisch, ohne Karten aufzudecken.
+     * Sonderfall: alle Spieler überkauft, Dealer gewinnt sofort.
      */
     private void handleAllPlayersBust() {
         StringBuilder results = new StringBuilder();
-        results.append("Alle Spieler haben sich überkauft! Der Dealer gewinnt automatisch.\n");
+        results.append("Alle Spieler haben sich überkauft! Der Dealer gewinnt.\n");
         results.append("--------------------------------------------------\n\n");
-
         for (Player p : players) {
             p.loseBet();
             results.append(p.getName())
                     .append(" (Rest: ").append(p.getBalance()).append("€) → überkauft\n");
         }
-
         checkBankruptciesAndShowResults(results.toString());
     }
 
     /**
-     * Wertet die Runde aus: vergleicht jeden Spieler mit dem Dealer
-     * und passt die Guthaben entsprechend an.
+     * Vergleicht jeden Spieler mit dem Dealer und passt Guthaben an.
      */
     private void evaluateWinner() {
         int dealerScore = dealer.calculateScore();
         StringBuilder results = new StringBuilder();
-
         results.append("Der Dealer hat: ").append(dealerScore).append(" Punkte.\n");
         results.append("--------------------------------------------------\n\n");
 
         for (Player p : players) {
-            int playerScore = p.calculateScore();
-            results.append(p.getName()).append("'s Hand ist wert: ").append(playerScore).append(" → ");
+            int ps = p.calculateScore();
+            results.append(p.getName()).append(" (").append(ps).append(" Punkte) → ");
 
-            if (playerScore > Participant.BLACKJACK_VALUE) {
+            if (ps > Participant.BLACKJACK_VALUE) {
                 p.loseBet();
                 results.append("Überkauft! (Rest: ").append(p.getBalance()).append("€)\n");
             } else if (dealerScore > Participant.BLACKJACK_VALUE) {
                 p.winBet();
                 results.append("Gewonnen! Dealer überkauft. (Neu: ").append(p.getBalance()).append("€)\n");
-            } else if (playerScore == dealerScore) {
+            } else if (ps == dealerScore) {
                 p.pushBet();
                 results.append("Unentschieden! Push. (Rest: ").append(p.getBalance()).append("€)\n");
-            } else if (playerScore > dealerScore) {
+            } else if (ps > dealerScore) {
                 p.winBet();
                 results.append("Gewonnen! (Neu: ").append(p.getBalance()).append("€)\n");
             } else {
                 p.loseBet();
-                results.append("Verloren! Dealer hat mehr. (Rest: ").append(p.getBalance()).append("€)\n");
+                results.append("Verloren! (Rest: ").append(p.getBalance()).append("€)\n");
             }
         }
-
         checkBankruptciesAndShowResults(results.toString());
     }
 
     /**
-     * Prüft nach der Rundenauswertung, welche Spieler pleite sind,
-     * entfernt sie aus der Spielerliste und übergibt das Ergebnis an die GUI.
+     * Prüft Bankrotte, entfernt Pleite-Spieler, löscht ggf. den Spielstand
+     * und übergibt das Ergebnis an die GUI.
      *
-     * @param resultText Der fertig formatierte Ergebnistext für die GUI.
+     * @param resultText Der Ergebnistext für die GUI.
      */
     private void checkBankruptciesAndShowResults(String resultText) {
-        ArrayList<String>  bankruptNames = new ArrayList<>();
-        ArrayList<Player>  toRemove      = new ArrayList<>();
+        ArrayList<String> bankruptNames = new ArrayList<>();
+        ArrayList<Player> toRemove      = new ArrayList<>();
 
         for (Player p : players) {
             if (p.getBalance() <= 0) {
@@ -354,6 +353,15 @@ public class GameEngine {
         players.removeAll(toRemove);
         boolean isGameOver = players.isEmpty();
 
+        if (isGameOver && loadedSaveId != null) {
+            try {
+                SaveGameManager.deleteSave(loadedSaveId);
+            } catch (IOException e) {
+                System.err.println("Fehler beim Löschen des Spielstands: " + e.getMessage());
+            }
+            loadedSaveId = null;
+        }
+
         if (window != null) {
             window.showResults(resultText, bankruptNames, isGameOver);
         }
@@ -363,30 +371,12 @@ public class GameEngine {
     // Getter
     // -------------------------------------------------------------------------
 
-    /**
-     * Gibt die Liste der noch aktiven Spieler zurück.
-     *
-     * @return {@link ArrayList} mit allen verbleibenden {@link Player}-Objekten.
-     */
-    public ArrayList<Player> getPlayers() {
-        return players;
-    }
+    /** @return Alle aktiven Spieler. */
+    public ArrayList<Player> getPlayers() { return players; }
 
-    /**
-     * Gibt den Dealer zurück.
-     *
-     * @return Der {@link Dealer} dieser Runde.
-     */
-    public Dealer getDealer() {
-        return dealer;
-    }
+    /** @return Der Dealer. */
+    public Dealer getDealer() { return dealer; }
 
-    /**
-     * Gibt das aktuelle Deck zurück.
-     *
-     * @return Das aktive {@link Deck}.
-     */
-    public Deck getDeck() {
-        return deck;
-    }
+    /** @return Das aktuelle Deck. */
+    public Deck getDeck() { return deck; }
 }

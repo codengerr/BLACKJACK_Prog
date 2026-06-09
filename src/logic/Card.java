@@ -7,7 +7,7 @@ package logic;
  * Diese Klasse gehört zur <em>Logik-Schicht</em> und enthält bewusst * <strong>keine</strong> GUI-Abhängigkeiten. Das Laden von Bildern
  * übernimmt die GUI-Schicht (z.B. ein {@code CardImageLoader}). * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class Card {

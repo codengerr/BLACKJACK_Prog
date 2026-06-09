@@ -16,7 +16,7 @@ import java.awt.RenderingHints;
  * Umrissfarbe und Textfarbe sind über den Konstruktor konfigurierbar.
  * </p>
  *
- * @author  [Dein Name]
+ * @author  Elias
  * @version 1.0
  */
 public class OutlinedLabel extends JLabel {
