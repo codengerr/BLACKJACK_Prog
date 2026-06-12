@@ -13,6 +13,11 @@ package logic;
  * @version 2.0
  */
 public enum Rank {
+    /**
+     * Ass – Punktwert initial 11.
+     * Wird in {@link Participant#calculateScore()} bei Bedarf auf 1 reduziert.
+     */
+    ASS(11),
 
 
     ZWEI(2),
@@ -48,13 +53,10 @@ public enum Rank {
     DAME(10),
 
 
-    KÖNIG(10),
+    KÖNIG(10);
 
-    /**
-     * Ass – Punktwert initial 11.
-     * Wird in {@link Participant#calculateScore()} bei Bedarf auf 1 reduziert.
-     */
-    ASS(11);
+
+
 
     /** Der Blackjack-Punktwert dieses Kartenwerts. */
     private final int value;

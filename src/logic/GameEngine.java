@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * Rundenablauf:
  * <ol>
  *   <li>Karten werden verdeckt ausgeteilt.</li>
- *   <li>Jeder Spieler setzt seinen Einsatz ({@link #setcurrentBet()}).</li>
+ *   <li>Jeder Spieler setzt seinen Einsatz ({@link #setCurrentBet()}).</li>
  *   <li>Alle Einsätze gesetzt → Karten aufgedeckt, Spielzüge beginnen.</li>
  *   <li>Dealer zieht automatisch, danach Auswertung.</li>
  * </ol>
@@ -36,7 +36,7 @@ public class GameEngine {
     private static final int DEALER_STAND_VALUE = 17;
 
     /** Intervall in ms zwischen den Dealer-Karten. */
-    private static final int DEALER_TIMER_MS = 800;
+    private static final int DEALER_TIMER_MS = 1500;
 
     // -------------------------------------------------------------------------
     // Felder
@@ -108,8 +108,7 @@ public class GameEngine {
         betPlayerIndex     = 0;
         currentPlayerIndex = 0;
 
-        deck = new Deck();
-        deck.refillAndShuffle();
+        deck = new Deck(); // Konstruktor mischt bereits
 
         dealer.clearHand();
         for (Player p : players) {
@@ -126,7 +125,7 @@ public class GameEngine {
         // Einsatz-Phase starten: Karten bleiben verdeckt
         if (window != null) {
             window.updateCardImagesHidden(2);
-            startBetPhase();
+            startBetPhase(0);
         }
     }
 
@@ -134,7 +133,12 @@ public class GameEngine {
      * Startet die Einsatz-Phase: zeigt dem aktuellen Spieler das Einsatz-UI
      * und wartet auf seine Eingabe.
      */
-    private void startBetPhase() {
+    /**
+     * Startet die Einsatz-Phase für den aktuellen Spieler.
+     *
+     * @param suggestedBet Vorschlagswert der ins Eingabefeld eingetragen wird (0 = kein Vorschlag).
+     */
+    private void startBetPhase(int suggestedBet) {
         if (betPlayerIndex < players.size()) {
             Player betPlayer = players.get(betPlayerIndex);
             if (window != null) {
@@ -143,13 +147,17 @@ public class GameEngine {
                         + "Guthaben: " + betPlayer.getBalance() + "€\n"
                         + "Mindest-Einsatz: " + Player.MIN_BET + "€");
                 window.showBetUI(true);  // Einsatz-Felder AN, Hit/Stand AUS
+                // Vorschlag von Spieler 1 ins Textfeld eintragen (wenn gültig)
+                if (suggestedBet >= Player.MIN_BET && suggestedBet <= betPlayer.getBalance()) {
+                    window.prefillBetInput(suggestedBet);
+                }
             }
         }
     }
 
     /**
      * Bestätigt den Einsatz des aktuellen Bet-Spielers und geht zum nächsten.
-     * Haben alle Spieler gesetzt, beginnt die Spielphase.
+     * Der Einsatz von Spieler 1 wird als Vorschlag für alle folgenden Spieler übernommen.
      *
      * @param amount Der Einsatz in Euro.
      * @throws IllegalArgumentException wenn der Betrag ungültig ist.
@@ -165,8 +173,8 @@ public class GameEngine {
         betPlayerIndex++;
 
         if (betPlayerIndex < players.size()) {
-            // Nächster Spieler setzt seinen Einsatz
-            startBetPhase();
+            // Nächster Spieler setzt seinen Einsatz – Betrag von Spieler 1 als Vorschlag
+            startBetPhase(amount);
         } else {
             // Alle haben gesetzt → Karten aufdecken, Spielphase starten
             currentPlayerIndex = 0;
@@ -190,10 +198,11 @@ public class GameEngine {
             Player active = players.get(currentPlayerIndex);
 
             if (window != null) {
+                window.setActionButtonsEnabled(true); // Buttons für neuen Spieler freigeben
                 window.updateGameView(active.getName() + " ist am Zug.\n\n"
-                        + "Aktueller Wert: " + active.calculateScore() + "\n\n"
                         + "Was möchtest du tun?");
                 window.updateCardImages(active.getHand());
+                window.updateScore(active.calculateScore());
                 window.updateBalanceView(active.getBalance(), active.getCurrentBet());
             }
 
@@ -224,23 +233,30 @@ public class GameEngine {
 
         if (window != null) {
             window.updateCardImages(active.getHand());
+            window.updateScore(newScore);
         }
 
         if (newScore > Participant.BLACKJACK_VALUE) {
-            if (window != null) window.updateGameView(
-                    active.getName() + " hat sich überkauft! (" + newScore + " Punkte)");
-            playerStand();
+            if (window != null) {
+                window.updateGameView(active.getName() + " hat sich überkauft!");
+                window.setActionButtonsEnabled(false);
+            }
+            Timer bustTimer = new Timer(1000, e -> playerStand());
+            bustTimer.setRepeats(false);
+            bustTimer.start();
 
         } else if (newScore == Participant.BLACKJACK_VALUE) {
-            if (window != null) window.updateGameView(
-                    active.getName() + " hat die perfekte 21!\nZug wird automatisch beendet.");
-            playerStand();
+            if (window != null){
+                window.updateGameView(active.getName() + " hat die perfekte 21!\nZug wird automatisch beendet!");
+                window.setActionButtonsEnabled(false);
+            }
+            Timer blackjackTimer = new Timer(10000, e -> playerStand());
+            blackjackTimer.setRepeats(false);
+            blackjackTimer.start();
 
         } else {
             if (window != null) window.updateGameView(
                     active.getName() + " zieht eine Karte.\n\n"
-                            + "Neue Hand: " + active.getHand() + "\n"
-                            + "Aktueller Wert: " + newScore + "\n\n"
                             + "Was möchtest du tun?");
             active.makeTurn(this);
         }
@@ -262,7 +278,18 @@ public class GameEngine {
      * Startet den automatischen Dealer-Zug mit Swing-Timer.
      */
     private void startDealerTurn() {
-        if (window != null) window.updateGameView("Der Dealer deckt auf...");
+        if (window != null) {
+            window.updateCardImages(dealer.getHand());
+            window.updateScore(dealer.calculateScore());
+            window.updateGameView("");
+            window.setActionButtonsEnabled(false); // Hit/Stand sperren während Dealer zieht
+        }
+
+        // Dealer hat bereits ≥17 → sofort auswerten, kein Timer nötig
+        if (dealer.calculateScore() >= DEALER_STAND_VALUE) {
+            evaluateWinner();
+            return;
+        }
 
         Timer dealerTimer = new Timer(DEALER_TIMER_MS, null);
         dealerTimer.addActionListener(e -> {
@@ -270,6 +297,7 @@ public class GameEngine {
                 dealer.addCard(deck.drawCard());
                 if (window != null) {
                     window.updateCardImages(dealer.getHand());
+                    window.updateScore(dealer.calculateScore());
                     window.updateGameView("Der Dealer zieht...\nAktueller Wert: "
                             + dealer.calculateScore());
                 }

@@ -417,7 +417,11 @@ public class GameWindow extends JFrame {
         im.put(KeyStroke.getKeyStroke("ENTER"), "standAction");
         am.put("standAction", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
-                if (engine != null && gameScreenReady && standButton.isEnabled()) engine.playerStand();
+                // ENTER nur als Stand werten wenn das Einsatz-Textfeld NICHT fokussiert ist
+                if (engine != null && gameScreenReady && standButton.isEnabled()
+                        && !betInputField.isFocusOwner()) {
+                    engine.playerStand();
+                }
             }
         });
     }
@@ -433,7 +437,6 @@ public class GameWindow extends JFrame {
             if (engine == null || betrag <= 0) return;
 
             engine.confirmBet(betrag);
-            betInputField.setText("");
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Bitte nur ganze Zahlen eingeben!");
@@ -554,11 +557,13 @@ public class GameWindow extends JFrame {
 
     /**
      * Aktualisiert den Info-Text im Spiel-Screen.
+     * Bei leerem Text wird die TextArea ausgeblendet.
      *
      * @param text Der anzuzeigende Text.
      */
     public void updateGameView(String text) {
         gameTextArea.setText(text);
+        gameTextArea.setVisible(text != null && !text.isEmpty());
     }
 
     /**
@@ -625,6 +630,20 @@ public class GameWindow extends JFrame {
     }
 
     /**
+     * Trägt einen Vorschlagswert ins Einsatz-Textfeld ein und markiert ihn,
+     * sodass der Spieler ihn direkt überschreiben oder mit Enter bestätigen kann.
+     *
+     * @param amount Der voreinzutragende Betrag.
+     */
+    public void prefillBetInput(int amount) {
+        if (betInputField != null) {
+            betInputField.setText(String.valueOf(amount));
+            betInputField.selectAll(); // direkt überschreibbar
+            betInputField.requestFocusInWindow();
+        }
+    }
+
+    /**
      * Wechselt zum Ergebnis-Screen.
      *
      * @param resultText  Ergebnistext der Runde.
@@ -650,6 +669,19 @@ public class GameWindow extends JFrame {
         if (betInputField != null) { betInputField.setEnabled(true); betInputField.setText(""); }
         if (hitButton     != null) hitButton.setEnabled(false);
         if (standButton   != null) standButton.setEnabled(false);
+        if (scoreLabel    != null) scoreLabel.setText("Wert: –");
+    }
+
+    /**
+     * Aktiviert oder deaktiviert Hit- und Stand-Button.
+     * Wird von {@link GameEngine} genutzt, um während des Dealer-Zugs
+     * Spielereingaben zu sperren.
+     *
+     * @param enabled {@code true} = Buttons aktiv, {@code false} = gesperrt.
+     */
+    public void setActionButtonsEnabled(boolean enabled) {
+        if (hitButton   != null) hitButton.setEnabled(enabled);
+        if (standButton != null) standButton.setEnabled(enabled);
     }
 
     // =========================================================================

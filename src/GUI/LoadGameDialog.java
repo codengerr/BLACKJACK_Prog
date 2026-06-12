@@ -6,20 +6,22 @@ import Saving.SaveGameManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Modaler Dialog zum Laden eines gespeicherten Spielstands.
  * <p>
  * Zeigt alle vorhandenen Spielstände als auswählbare Liste an.
- * Bei mehr als 3 Spielern wird nur die Anzahl angezeigt, um
- * die Darstellung übersichtlich zu halten.
+ * Die Liste kann nach Datum, Gesamtguthaben oder ID sortiert werden.
+ * Bei mehr als 3 Spielern wird nur die Anzahl angezeigt.
  * </p>
  *
  * @author  Elias
- * @version 1.0
+ * @version 1.1
  */
-public class LoadGameDialog extends JDialog{
+public class LoadGameDialog extends JDialog {
 
     /** Der vom Benutzer gewählte Spielstand, oder {@code null} bei Abbruch. */
     private GameState selectedState = null;
@@ -30,8 +32,8 @@ public class LoadGameDialog extends JDialog{
      * @param parent Das übergeordnete Fenster (für Zentrierung).
      */
     public LoadGameDialog(JFrame parent) {
-        super(parent, "Spielstand laden", true); // true = modal
-        setSize(700, 450);
+        super(parent, "Spielstand laden", true);
+        setSize(700, 500);
         setLocationRelativeTo(parent);
         setResizable(false);
         getContentPane().setBackground(new Color(20, 20, 20));
@@ -57,29 +59,54 @@ public class LoadGameDialog extends JDialog{
      * Baut die gesamte Benutzeroberfläche des Dialogs auf.
      */
     private void buildUI() {
-        // --- Titel ---
-        JLabel titleLabel = new JLabel("Spielstand laden", SwingConstants.CENTER);
+        // --- Titelzeile mit Sortier-Dropdown ---
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setOpaque(false);
+        northPanel.setBorder(new EmptyBorder(10, 15, 5, 15));
+
+        JLabel titleLabel = new JLabel("Spielstand laden", SwingConstants.LEFT);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
         titleLabel.setForeground(Color.ORANGE);
-        titleLabel.setBorder(new EmptyBorder(15, 0, 5, 0));
-        add(titleLabel, BorderLayout.NORTH);
+
+        JPanel sortPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        sortPanel.setOpaque(false);
+
+        JLabel sortLabel = new JLabel("Sortieren: ");
+        sortLabel.setForeground(Color.LIGHT_GRAY);
+        sortLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        String[] sortOptions = {
+                "Datum (neu \u2192 alt)",
+                "Datum (alt \u2192 neu)",
+                "Geld (\u2193 reich \u2192 arm)",
+                "Geld (\u2191 arm \u2192 reich)",
+                "ID (A \u2192 Z)"
+        };
+        JComboBox<String> sortBox = new JComboBox<>(sortOptions);
+        sortBox.setBackground(new Color(40, 40, 40));
+        sortBox.setForeground(Color.WHITE);
+        sortBox.setFont(new Font("Arial", Font.PLAIN, 13));
+        sortBox.setFocusable(false);
+
+        sortPanel.add(sortLabel);
+        sortPanel.add(sortBox);
+
+        northPanel.add(titleLabel, BorderLayout.WEST);
+        northPanel.add(sortPanel,  BorderLayout.EAST);
+        add(northPanel, BorderLayout.NORTH);
 
         // --- Spielstandsliste ---
         List<GameState> saves = SaveGameManager.loadAllSaves();
 
         if (saves.isEmpty()) {
-            // Keine Spielstände vorhanden
-            JLabel emptyLabel = new JLabel("Keine gespeicherten Spielstände gefunden.", SwingConstants.CENTER);
+            JLabel emptyLabel = new JLabel("Keine gespeicherten Spielst\u00e4nde gefunden.", SwingConstants.CENTER);
             emptyLabel.setForeground(Color.LIGHT_GRAY);
             emptyLabel.setFont(new Font("Arial", Font.ITALIC, 16));
             add(emptyLabel, BorderLayout.CENTER);
 
         } else {
-            // Listenmodell befüllen
             DefaultListModel<GameState> listModel = new DefaultListModel<>();
-            for (GameState state : saves) {
-                listModel.addElement(state);
-            }
+            fillModel(listModel, saves, 0); // initial: Datum neu -> alt
 
             JList<GameState> saveList = new JList<>(listModel);
             saveList.setBackground(new Color(30, 30, 30));
@@ -90,7 +117,6 @@ public class LoadGameDialog extends JDialog{
             saveList.setFixedCellHeight(50);
             saveList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-            // Custom Renderer: zeigt toDisplayString() an
             saveList.setCellRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(
@@ -107,12 +133,27 @@ public class LoadGameDialog extends JDialog{
                 }
             });
 
-            // Doppelklick lädt sofort
+            // Doppelklick ladet sofort
             saveList.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent e) {
                     if (e.getClickCount() == 2) {
                         confirmLoad(saveList.getSelectedValue());
+                    }
+                }
+            });
+
+            // Sortierung neu anwenden wenn Dropdown geandert wird
+            sortBox.addActionListener(e -> {
+                GameState selected = saveList.getSelectedValue();
+                fillModel(listModel, saves, sortBox.getSelectedIndex());
+                // Selektion beibehalten falls moeglich
+                if (selected != null) {
+                    for (int i = 0; i < listModel.size(); i++) {
+                        if (listModel.get(i).getId().equals(selected.getId())) {
+                            saveList.setSelectedIndex(i);
+                            break;
+                        }
                     }
                 }
             });
@@ -126,27 +167,28 @@ public class LoadGameDialog extends JDialog{
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
             buttonPanel.setBackground(new Color(20, 20, 20));
 
-            JButton loadButton   = buildButton("Laden",   new Color(40, 120, 40));
-            JButton deleteButton = buildButton("Löschen", new Color(120, 40, 40));
+            JButton loadButton   = buildButton("Laden",     new Color(40, 120, 40));
+            JButton deleteButton = buildButton("L\u00f6schen",   new Color(120, 40, 40));
             JButton cancelButton = buildButton("Abbrechen", new Color(60, 60, 60));
 
             loadButton.addActionListener(e -> confirmLoad(saveList.getSelectedValue()));
 
             deleteButton.addActionListener(e -> {
-                GameState selected = saveList.getSelectedValue();
-                if (selected == null) {
-                    JOptionPane.showMessageDialog(this, "Bitte zuerst einen Spielstand auswählen.");
+                GameState sel = saveList.getSelectedValue();
+                if (sel == null) {
+                    JOptionPane.showMessageDialog(this, "Bitte zuerst einen Spielstand ausw\u00e4hlen.");
                     return;
                 }
                 int confirm = JOptionPane.showConfirmDialog(this,
-                        "Spielstand \"" + selected.getId() + "\" wirklich löschen?",
-                        "Löschen bestätigen", JOptionPane.YES_NO_OPTION);
+                        "Spielstand \"" + sel.getId() + "\" wirklich l\u00f6schen?",
+                        "L\u00f6schen best\u00e4tigen", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     try {
-                        SaveGameManager.deleteSave(selected.getId());
-                        listModel.removeElement(selected);
+                        SaveGameManager.deleteSave(sel.getId());
+                        saves.removeIf(s -> s.getId().equals(sel.getId()));
+                        fillModel(listModel, saves, sortBox.getSelectedIndex());
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Fehler beim Löschen: " + ex.getMessage());
+                        JOptionPane.showMessageDialog(this, "Fehler beim L\u00f6schen: " + ex.getMessage());
                     }
                 }
             });
@@ -160,14 +202,58 @@ public class LoadGameDialog extends JDialog{
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Sortierung
+    // -------------------------------------------------------------------------
+
     /**
-     * Bestätigt die Auswahl eines Spielstands und schließt den Dialog.
+     * Bef\u00fcllt das ListModel mit den Spielst\u00e4nden in der gew\u00e4hlten Sortierreihenfolge.
+     *
+     * @param model      Das zu bef\u00fcllende {@link DefaultListModel}.
+     * @param saves      Die Quellliste der Spielst\u00e4nde.
+     * @param sortIndex  Index der gew\u00e4hlten Sortieroption (0-4).
+     */
+    private void fillModel(DefaultListModel<GameState> model, List<GameState> saves, int sortIndex) {
+        List<GameState> sorted = new ArrayList<>(saves);
+
+        switch (sortIndex) {
+            case 0 -> java.util.Collections.reverse(sorted); // Datum neu -> alt
+            case 1 -> {}                                      // Datum alt -> neu: Originalreihenfolge
+            case 2 -> sorted.sort(Comparator.comparingInt(LoadGameDialog::totalBalance).reversed()); // Geld hoch -> tief
+            case 3 -> sorted.sort(Comparator.comparingInt(LoadGameDialog::totalBalance));            // Geld tief -> hoch
+            case 4 -> sorted.sort(Comparator.comparing(GameState::getId));                           // ID A->Z
+        }
+
+        model.clear();
+        for (GameState s : sorted) {
+            model.addElement(s);
+        }
+    }
+
+    /**
+     * Berechnet das Gesamtguthaben aller Spieler eines Spielstands.
+     *
+     * @param state Der Spielstand.
+     * @return Summe aller Spieler-Guthaben in Euro.
+     */
+    private static int totalBalance(GameState state) {
+        return state.getPlayers().stream()
+                .mapToInt(GameState.PlayerEntry::getBalance)
+                .sum();
+    }
+
+    // -------------------------------------------------------------------------
+    // Hilfsmethoden
+    // -------------------------------------------------------------------------
+
+    /**
+     * Best\u00e4tigt die Auswahl eines Spielstands und schlie\u00dft den Dialog.
      *
      * @param state Der zu ladende {@link GameState}.
      */
     private void confirmLoad(GameState state) {
         if (state == null) {
-            JOptionPane.showMessageDialog(this, "Bitte zuerst einen Spielstand auswählen.");
+            JOptionPane.showMessageDialog(this, "Bitte zuerst einen Spielstand ausw\u00e4hlen.");
             return;
         }
         this.selectedState = state;
