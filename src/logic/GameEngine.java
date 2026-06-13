@@ -8,18 +8,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Das Herzstück des Spiels – die Logik-Schicht.
+ * Das Herzstück des Spiels – die Logikschicht.
  * <p>
- * Verwaltet Deck, Spielerliste und Dealer, steuert den Rundenablauf
- * und kommuniziert Ergebnisse an die {@link GameWindow GUI-Schicht}.
+ * Verwaltet Deck Spielerliste und Dealer steuert den Rundenablauf
+ * und kommuniziert Ergebnisse an die {@link GameWindow GUISchicht}.
  * </p>
  * <p>
  * Rundenablauf:
  * <ol>
- *   <li>Karten werden verdeckt ausgeteilt.</li>
- *   <li>Jeder Spieler setzt seinen Einsatz ({@link #setCurrentBet()}).</li>
- *   <li>Alle Einsätze gesetzt → Karten aufgedeckt, Spielzüge beginnen.</li>
- *   <li>Dealer zieht automatisch, danach Auswertung.</li>
+ * <li>Karten werden verdeckt ausgeteilt.</li>
+ * <li>Jeder Spieler setzt seinen Einsatz ({@link #setCurrentBet()}).</li>
+ * <li>Alle Einsätze gesetzt → Karten aufgedeckt Spielzüge beginnen.</li>
+ * <li>Dealer zieht automatisch danach Auswertung.</li>
  * </ol>
  * </p>
  *
@@ -32,10 +32,10 @@ public class GameEngine {
     // Konstanten
     // -------------------------------------------------------------------------
 
-    /** Punktwert, ab dem der Dealer stehen bleiben muss. */
+    /** Punktwert ab dem der Dealer stehen bleiben muss. */
     private static final int DEALER_STAND_VALUE = 17;
 
-    /** Intervall in ms zwischen den Dealer-Karten. */
+    /** Intervall in ms zwischen den Dealer Karten. */
     private static final int DEALER_TIMER_MS = 1500;
 
     // -------------------------------------------------------------------------
@@ -49,13 +49,13 @@ public class GameEngine {
     private String            loadedSaveId = null;
 
     /**
-     * Index des Spielers, der gerade seinen Einsatz setzt (Bet-Phase).
-     * Läuft von 0 bis players.size()-1, dann startet die Spielphase.
+     * Index des Spielers der gerade seinen Einsatz setzt (Einsatzphase).
+     * Läuft von 0 bis players.size()-1 dann startet die Spielphase.
      */
     private int betPlayerIndex;
 
     /**
-     * Index des Spielers, der gerade am Zug ist (Spielphase).
+     * Index des Spielers der gerade am Zug ist (Spielphase).
      */
     private int currentPlayerIndex;
 
@@ -88,9 +88,9 @@ public class GameEngine {
 
     /**
      * Setzt die ID des geladenen Spielstands.
-     * Bei Game-Over wird dieser Spielstand automatisch gelöscht.
+     * Bei Game Over wird dieser Spielstand automatisch gelöscht.
      *
-     * @param id Spielstand-ID oder {@code null} für ein neues Spiel.
+     * @param id Spielstand ID oder {@code null} für ein neues Spiel.
      */
     public void setLoadedSaveId(String id) {
         this.loadedSaveId = id;
@@ -101,8 +101,8 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Startet eine neue Runde: Karten werden verdeckt ausgeteilt,
-     * dann beginnt die Einsatz-Phase beim ersten Spieler.
+     * Startet eine neue Runde: Karten werden verdeckt ausgeteilt
+     * dann beginnt die Einsatzphase beim ersten Spieler.
      */
     public void startNewRound() {
         betPlayerIndex     = 0;
@@ -122,7 +122,7 @@ public class GameEngine {
             }
         }
 
-        // Einsatz-Phase starten: Karten bleiben verdeckt
+        // Einsatzphase starten: Karten bleiben verdeckt
         if (window != null) {
             window.updateCardImagesHidden(2);
             startBetPhase(0);
@@ -130,11 +130,7 @@ public class GameEngine {
     }
 
     /**
-     * Startet die Einsatz-Phase: zeigt dem aktuellen Spieler das Einsatz-UI
-     * und wartet auf seine Eingabe.
-     */
-    /**
-     * Startet die Einsatz-Phase für den aktuellen Spieler.
+     * Startet die Einsatzphase für den aktuellen Spieler.
      *
      * @param suggestedBet Vorschlagswert der ins Eingabefeld eingetragen wird (0 = kein Vorschlag).
      */
@@ -146,7 +142,7 @@ public class GameEngine {
                 window.updateGameView(betPlayer.getName() + ", setze deinen Einsatz!\n\n"
                         + "Guthaben: " + betPlayer.getBalance() + "€\n"
                         + "Mindest-Einsatz: " + Player.MIN_BET + "€");
-                window.showBetUI(true);  // Einsatz-Felder AN, Hit/Stand AUS
+                window.showBetUI(true);  // Einsatzfelder AN Hit/Stand AUS
                 // Vorschlag von Spieler 1 ins Textfeld eintragen (wenn gültig)
                 if (suggestedBet >= Player.MIN_BET && suggestedBet <= betPlayer.getBalance()) {
                     window.prefillBetInput(suggestedBet);
@@ -156,7 +152,7 @@ public class GameEngine {
     }
 
     /**
-     * Bestätigt den Einsatz des aktuellen Bet-Spielers und geht zum nächsten.
+     * Bestätigt den Einsatz des aktuellen Bet Spielers und geht zum nächsten.
      * Der Einsatz von Spieler 1 wird als Vorschlag für alle folgenden Spieler übernommen.
      *
      * @param amount Der Einsatz in Euro.
@@ -173,13 +169,13 @@ public class GameEngine {
         betPlayerIndex++;
 
         if (betPlayerIndex < players.size()) {
-            // Nächster Spieler setzt seinen Einsatz – Betrag von Spieler 1 als Vorschlag
+            // Nächstes Mitglied setzt seinen Einsatz – Betrag von Spieler 1 als Vorschlag
             startBetPhase(amount);
         } else {
-            // Alle haben gesetzt → Karten aufdecken, Spielphase starten
+            // Alle haben gesetzt → Karten aufdecken Spielphase starten
             currentPlayerIndex = 0;
             if (window != null) {
-                window.showBetUI(false); // Einsatz-Felder AUS, Hit/Stand AN
+                window.showBetUI(false); // Einsatzfelder AUS Hit/Stand AN
             }
             nextPlayerTurn();
         }
@@ -191,7 +187,7 @@ public class GameEngine {
 
     /**
      * Aktiviert den nächsten Spieler.
-     * Sind alle Spieler fertig, beginnt der Dealer-Zug.
+     * Sind alle Spieler fertig beginnt der Dealerzug.
      */
     public void nextPlayerTurn() {
         if (currentPlayerIndex < players.size()) {
@@ -275,7 +271,7 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Startet den automatischen Dealer-Zug mit Swing-Timer.
+     * Startet den automatischen Dealerzug mit Swing Timer.
      */
     private void startDealerTurn() {
         if (window != null) {
@@ -285,7 +281,7 @@ public class GameEngine {
             window.setActionButtonsEnabled(false); // Hit/Stand sperren während Dealer zieht
         }
 
-        // Dealer hat bereits ≥17 → sofort auswerten, kein Timer nötig
+        // Dealer hat bereits ≥17 → sofort auswerten kein Timer nötig
         if (dealer.calculateScore() >= DEALER_STAND_VALUE) {
             evaluateWinner();
             return;
@@ -314,7 +310,7 @@ public class GameEngine {
     // -------------------------------------------------------------------------
 
     /**
-     * Sonderfall: alle Spieler überkauft, Dealer gewinnt sofort.
+     * Sonderfall: alle Spieler überkauft Dealer gewinnt sofort.
      */
     private void handleAllPlayersBust() {
         StringBuilder results = new StringBuilder();
@@ -362,7 +358,7 @@ public class GameEngine {
     }
 
     /**
-     * Prüft Bankrotte, entfernt Pleite-Spieler, löscht ggf. den Spielstand
+     * Prüft Bankrotte entfernt Pleite-Spieler löscht ggf. den Spielstand
      * und übergibt das Ergebnis an die GUI.
      *
      * @param resultText Der Ergebnistext für die GUI.

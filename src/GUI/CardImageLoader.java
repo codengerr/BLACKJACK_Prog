@@ -12,9 +12,10 @@ import java.io.IOException;
 /**
  * Zuständig für das Laden und Bereitstellen aller Kartenbilder.
  * <p>
- * Diese Klasse gehört zur <em>GUI-Schicht</em> und kapselt sämtliche
- * Bild-Logik, die zuvor fälschlicherweise in {@code logic.Card} lag.
- * Das Sprite-Sheet und das Rückseiten-Bild werden beim ersten Zugriff * einmalig geladen (Singleton-Pattern).
+ * Diese Klasse gehört zur <em>GUISchicht</em> und kapselt sämtliche
+ * Bildlogik die zuvor fälschlicherweise in {@code logic.Card} lag.
+ * Das Spritesheet und das Rückseitenbild werden beim ersten Zugriff
+ * einmalig geladen (Singleton Pattern).
  * </p>
  *
  * @author  Elias
@@ -22,22 +23,22 @@ import java.io.IOException;
  */
 public class CardImageLoader {
 
-    /** Breite einer einzelnen Karte im Sprite-Sheet in Pixeln. */
+    /** Breite einer einzelnen Karte im Spritesheet in Pixeln. */
     private static final int CARD_WIDTH  = 225;
 
-    /** Höhe einer einzelnen Karte im Sprite-Sheet in Pixeln. */
+    /** Höhe einer einzelnen Karte im Spritesheet in Pixeln. */
     private static final int CARD_HEIGHT = 315;
 
-    /** Pfad zum Sprite-Sheet relativ zum Projektordner. */
+    /** Pfad zum Spritesheet relativ zum Projektordner. */
     private static final String SPRITE_PATH   = "resources/Karten.png";
 
-    /** Pfad zum Rückseiten-Bild relativ zum Projektordner. */
+    /** Pfad zum Rückseitenbild relativ zum Projektordner. */
     private static final String BACK_PATH     = "resources/CardBack.png";
 
-    /** Das einmal geladene Sprite-Sheet. */
+    /** Das einmal geladene Spritesheet. */
     private static BufferedImage spriteSheet;
 
-    /** Das einmal geladene und skalierte Rückseiten-Icon. */
+    /** Das einmal geladene und skalierte Rückseitenicon. */
     private static ImageIcon cardBackImage;
 
     /** Statischer Initialisierer – lädt beide Ressourcen einmalig beim Klassenstart. */
@@ -54,11 +55,11 @@ public class CardImageLoader {
     // -------------------------------------------------------------------------
 
     /**
-     * Gibt das {@link ImageIcon} für die angegebene Karte zurück,
-     * ausgeschnitten aus dem Sprite-Sheet.
+     * Gibt das {@link ImageIcon} für die angegebene Karte zurück
+     * ausgeschnitten aus dem Spritesheet.
      *
-     * @param card Die logische {@link Card}, deren Bild benötigt wird.
-     * @return Das passende {@link ImageIcon}, oder {@code null} bei Ladefehler.
+     * @param card Die logische {@link Card} deren Bild benötigt wird.
+     * @return Das passende {@link ImageIcon} oder {@code null} bei Ladefehler.
      */
     public static ImageIcon getCardImage(Card card) {
         if (spriteSheet == null) {
@@ -83,7 +84,7 @@ public class CardImageLoader {
     /**
      * Gibt das {@link ImageIcon} für die Kartenrückseite zurück.
      *
-     * @return Das Rückseiten-Icon, oder {@code null} bei Ladefehler.
+     * @return Das Rückseitenicon oder {@code null} bei Ladefehler.
      */
     public static ImageIcon getCardBack() {
         return cardBackImage;
@@ -93,28 +94,28 @@ public class CardImageLoader {
     // Private Hilfsmethoden
     // -------------------------------------------------------------------------
 
-    /** Lädt das Sprite-Sheet einmalig aus dem Dateisystem. */
+    /** Lädt das Spritesheet einmalig aus dem Dateisystem. */
     private static void loadSpriteSheet() {
         try {
             spriteSheet = ImageIO.read(new File(SPRITE_PATH));
         } catch (IOException e) {
-            System.err.println("FEHLER: Sprite-Sheet konnte nicht geladen werden: " + SPRITE_PATH);
+            System.err.println("FEHLER: Spritesheet konnte nicht geladen werden: " + SPRITE_PATH);
         }
     }
 
-    /** Lädt und skaliert das Rückseiten-Bild einmalig. */
+    /** Lädt und skaliert das Rückseitenbild einmalig. */
     private static void loadCardBack() {
         try {
             BufferedImage raw = ImageIO.read(new File(BACK_PATH));
             Image scaled = raw.getScaledInstance(CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
             cardBackImage = new ImageIcon(scaled);
         } catch (IOException e) {
-            System.err.println("FEHLER: Rückseiten-Bild konnte nicht geladen werden: " + BACK_PATH);
+            System.err.println("FEHLER: Rückseitenbild konnte nicht geladen werden: " + BACK_PATH);
         }
     }
 
     /**
-     * Gibt die Zeilen-Nummer im Sprite-Sheet für eine gegebene Kartenfarbe zurück.
+     * Gibt die Zeilennummer im Spritesheet für eine gegebene Kartenfarbe zurück.
      *
      * @param suit Die {@link Suit} der Karte.
      * @return Die Zeilennummer (0-basiert).

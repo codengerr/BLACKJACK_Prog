@@ -1,11 +1,11 @@
 package logic;
 
 /**
- * Definiert alle 13 Kartenwerte im Blackjack-Spiel, von Zwei bis Ass.
+ * Definiert alle 13 Kartenwerte im Blackjackspiel von Zwei bis Ass.
  * <p>
- * Jeder Wert ist mit seinem Standard-Blackjack-Punktwert verknüpft.
- * Bildkarten (Bube, Dame, König) zählen je 10 Punkte.
- * Das Ass zählt initial 11 Punkte; die Reduzierung auf 1 Punkt
+ * Jeder Wert ist mit seinem Standardblackjackpunktwert verknüpft.
+ * Bildkarten wie Bube Dame König zählen je 10 Punkte.
+ * Das Ass zählt initial 11 Punkte – die Reduzierung auf 1 Punkt
  * bei Überkauf erfolgt in {@link Participant#calculateScore()}.
  * </p>
  *
@@ -58,11 +58,11 @@ public enum Rank {
 
 
 
-    /** Der Blackjack-Punktwert dieses Kartenwerts. */
+    /** Der Blackjackpunktwert dieses Kartenwerts. */
     private final int value;
 
     /**
-     * Erstellt einen Kartenwert mit dem angegebenen Blackjack-Punktwert.
+     * Erstellt einen Kartenwert mit dem angegebenen Blackjackpunktwert.
      *
      * @param value Der Punktwert (1–11).
      */
@@ -71,11 +71,11 @@ public enum Rank {
     }
 
     /**
-     * Gibt den numerischen Blackjack-Punktwert zurück.
+     * Gibt den numerischen Blackjackpunktwert zurück.
      * <p>
-     * Bildkarten (Bube, Dame, König) liefern 10,
-     * das Ass liefert 11 (vor möglicher Reduzierung durch
-     * {@link Participant#calculateScore()}).
+     * Bildkarten wie Bube Dame König liefern 10
+     * das Ass liefert 11 vor einer möglichen Reduzierung durch
+     * {@link Participant#calculateScore()}.
      * </p>
      *
      * @return Punktwert als int.
@@ -87,7 +87,7 @@ public enum Rank {
     /**
      * Gibt den Namen des Kartenwerts zurück.
      *
-     * @return Den Enum-Namen (z.B. {@code "ASS"}, {@code "KÖNIG"}).
+     * @return Den Enumnamen wie etwa {@code "ASS"} oder {@code "KÖNIG"}.
      */
     @Override
     public String toString() {

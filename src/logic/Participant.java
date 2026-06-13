@@ -3,7 +3,7 @@ package logic;
 import java.util.ArrayList;
 
 /**
- * Abstrakte Basisklasse für alle Teilnehmer am Blackjack-Spiel.
+ * Abstrakte Basisklasse für alle Teilnehmer am Blackjackspiel.
  * <p>
  * Sowohl {@link Player} als auch {@link Dealer} erben von dieser Klasse
  * und teilen sich grundlegende Funktionen wie Kartenverwaltung und
@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public abstract class Participant {
 
-    /** Konstante für den Blackjack-Wert, bei dem automatisch gestanden wird. */
+    /** Konstante für den Blackjackwert bei dem automatisch gestanden wird. */
     public static final int BLACKJACK_VALUE = 21;
 
     /** Die Hand (Kartenliste) des Teilnehmers. Privat – Zugriff nur über Methoden. */
@@ -54,7 +54,7 @@ public abstract class Participant {
     }
 
     /**
-     * Leert die Hand des Teilnehmers (z.B. zu Beginn einer neuen Runde).
+     * Leert die Hand des Teilnehmers beispielsweise zu Beginn einer neuen Runde.
      */
     public void clearHand() {
         this.hand.clear();
@@ -72,8 +72,8 @@ public abstract class Participant {
     /**
      * Berechnet den aktuellen Punktwert der Hand.
      * <p>
-     * Asse zählen zunächst als 11. Würde der Gesamtwert 21 überschreiten,
-     * wird jedes Ass auf 1 reduziert, bis der Wert wieder ≤ 21 ist
+     * Asse zählen zunächst als 11. Würde der Gesamtwert 21 überschreiten
+     * wird jedes Ass auf 1 reduziert bis der Wert wieder ≤ 21 ist
      * oder keine Asse mehr übrig sind.
      * </p>
      *
@@ -100,10 +100,10 @@ public abstract class Participant {
     }
 
     /**
-     * Führt den Zug des Teilnehmers aus. Muss von Unterklassen implementiert werden,
-     * da Spieler und Dealer unterschiedlich reagieren (Tastendruck vs. Automatik).
+     * Führt den Zug des Teilnehmers aus. Muss von Unterklassen implementiert werden
+     * da Spieler und Dealer unterschiedlich reagieren wie etwa über Tastendruck oder Automatik.
      *
-     * @param engine Die aktive {@link GameEngine}, über die Aktionen ausgelöst werden.
+     * @param engine Die aktive {@link GameEngine} über die Aktionen ausgelöst werden.
      */
     public abstract void makeTurn(GameEngine engine);
 

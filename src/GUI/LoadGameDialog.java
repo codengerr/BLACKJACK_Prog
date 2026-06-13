@@ -14,7 +14,7 @@ import java.util.List;
  * Modaler Dialog zum Laden eines gespeicherten Spielstands.
  * <p>
  * Zeigt alle vorhandenen Spielstände als auswählbare Liste an.
- * Die Liste kann nach Datum, Gesamtguthaben oder ID sortiert werden.
+ * Die Liste kann nach Datum Gesamtguthaben oder ID sortiert werden.
  * Bei mehr als 3 Spielern wird nur die Anzahl angezeigt.
  * </p>
  *
@@ -23,11 +23,11 @@ import java.util.List;
  */
 public class LoadGameDialog extends JDialog {
 
-    /** Der vom Benutzer gewählte Spielstand, oder {@code null} bei Abbruch. */
+    /** Der vom Benutzer gewählte Spielstand oder {@code null} bei Abbruch. */
     private GameState selectedState = null;
 
     /**
-     * Erstellt und zeigt den Lade-Dialog an.
+     * Erstellt und zeigt den Ladedialog an.
      *
      * @param parent Das übergeordnete Fenster (für Zentrierung).
      */
@@ -45,21 +45,21 @@ public class LoadGameDialog extends JDialog {
     /**
      * Gibt den vom Benutzer ausgewählten {@link GameState} zurück.
      *
-     * @return Der gewählte Spielstand, oder {@code null} wenn abgebrochen.
+     * @return Der gewählte Spielstand oder {@code null} wenn abgebrochen.
      */
     public GameState getSelectedState() {
         return selectedState;
     }
 
     // -------------------------------------------------------------------------
-    // UI-Aufbau
+    // UIAufbau
     // -------------------------------------------------------------------------
 
     /**
      * Baut die gesamte Benutzeroberfläche des Dialogs auf.
      */
     private void buildUI() {
-        // --- Titelzeile mit Sortier-Dropdown ---
+        // --- Titelzeile mit Sortierdropdown ---
         JPanel northPanel = new JPanel(new BorderLayout());
         northPanel.setOpaque(false);
         northPanel.setBorder(new EmptyBorder(10, 15, 5, 15));
@@ -133,7 +133,7 @@ public class LoadGameDialog extends JDialog {
                 }
             });
 
-            // Doppelklick ladet sofort
+            // Doppelklick lädt sofort
             saveList.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -143,11 +143,11 @@ public class LoadGameDialog extends JDialog {
                 }
             });
 
-            // Sortierung neu anwenden wenn Dropdown geandert wird
+            // Sortierung neu anwenden wenn Dropdown geändert wird
             sortBox.addActionListener(e -> {
                 GameState selected = saveList.getSelectedValue();
                 fillModel(listModel, saves, sortBox.getSelectedIndex());
-                // Selektion beibehalten falls moeglich
+                // Selektion beibehalten falls möglich
                 if (selected != null) {
                     for (int i = 0; i < listModel.size(); i++) {
                         if (listModel.get(i).getId().equals(selected.getId())) {
@@ -209,9 +209,9 @@ public class LoadGameDialog extends JDialog {
     /**
      * Bef\u00fcllt das ListModel mit den Spielst\u00e4nden in der gew\u00e4hlten Sortierreihenfolge.
      *
-     * @param model      Das zu bef\u00fcllende {@link DefaultListModel}.
-     * @param saves      Die Quellliste der Spielst\u00e4nde.
-     * @param sortIndex  Index der gew\u00e4hlten Sortieroption (0-4).
+     * @param model      Das zu befüllende {@link DefaultListModel}.
+     * @param saves      Die Quellliste der Spielstände.
+     * @param sortIndex  Index der gewählten Sortieroption (0-4).
      */
     private void fillModel(DefaultListModel<GameState> model, List<GameState> saves, int sortIndex) {
         List<GameState> sorted = new ArrayList<>(saves);
@@ -234,7 +234,7 @@ public class LoadGameDialog extends JDialog {
      * Berechnet das Gesamtguthaben aller Spieler eines Spielstands.
      *
      * @param state Der Spielstand.
-     * @return Summe aller Spieler-Guthaben in Euro.
+     * @return Summe aller Spieler Guthaben in Euro.
      */
     private static int totalBalance(GameState state) {
         return state.getPlayers().stream()
@@ -247,7 +247,7 @@ public class LoadGameDialog extends JDialog {
     // -------------------------------------------------------------------------
 
     /**
-     * Best\u00e4tigt die Auswahl eines Spielstands und schlie\u00dft den Dialog.
+     * Bestätigt die Auswahl eines Spielstands und schließt den Dialog.
      *
      * @param state Der zu ladende {@link GameState}.
      */
@@ -263,7 +263,7 @@ public class LoadGameDialog extends JDialog {
     /**
      * Erstellt einen styled Button mit der angegebenen Hintergrundfarbe.
      *
-     * @param text  Der Button-Text.
+     * @param text  Der Button Text.
      * @param color Die Hintergrundfarbe.
      * @return Den fertigen {@link JButton}.
      */

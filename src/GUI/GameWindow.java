@@ -13,9 +13,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Das Hauptfenster des Blackjack-Spiels.
+ * Das Hauptfenster des Blackjack Spiels.
  * <p>
- * Verwaltet alle Screens (Setup, Spiel, Ergebnis, Bankrott) über ein
+ * Verwaltet alle Screens (Setup Spiel Ergebnis Bankrott) über ein
  * {@link CardLayout} und kommuniziert bidirektional mit der {@link GameEngine}.
  * </p>
  *
@@ -28,10 +28,10 @@ public class GameWindow extends JFrame {
     // Konstanten
     // -------------------------------------------------------------------------
 
-    /** Verzögerung in ms nach Screen-Wechsel, bevor Tastatur wieder aktiv ist. */
+    /** Verzögerung in ms nach Screenwechsel bevor Tastatur wieder aktiv ist. */
     private static final int INPUT_DELAY_MS   = 200;
 
-    /** Blink-Intervall in ms für den Hinweistext auf dem Ergebnis-Screen. */
+    /** Blinkintervall in ms für den Hinweistext auf dem Ergebnisscreen. */
     private static final int BLINK_INTERVAL_MS = 600;
 
     // -------------------------------------------------------------------------
@@ -44,7 +44,7 @@ public class GameWindow extends JFrame {
     private JPanel bankruptScreen;
 
     // -------------------------------------------------------------------------
-    // UI-Elemente
+    // UI Elemente
     // -------------------------------------------------------------------------
 
     private JTextArea  gameTextArea;
@@ -101,7 +101,7 @@ public class GameWindow extends JFrame {
     }
 
     // -------------------------------------------------------------------------
-    // Innere Klasse: Hintergrund-Panel
+    // Innere Klasse: Hintergrundpanel
     // -------------------------------------------------------------------------
 
     /**
@@ -153,7 +153,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Wechselt zum Game-Screen und gibt nach kurzer Verzögerung die Tastatur frei.
+     * Wechselt zum Gamescreen und gibt nach kurzer Verzögerung die Tastatur frei.
      */
     private void switchToGameWithDelay() {
         this.gameScreenReady = false;
@@ -167,14 +167,18 @@ public class GameWindow extends JFrame {
     }
 
     // -------------------------------------------------------------------------
-    // Screen-Aufbau
+    // Screenaufbau
     // -------------------------------------------------------------------------
 
     /**
-     * Erstellt den Setup-Screen mit Spieleranzahl-Auswahl, Start- und Lade-Button.
+     * Erstellt den Setupscreen mit Spieleranzahlauswahl Start Lade und Beendenbutton.
      */
     private void buildSetupScreen() {
-        setupScreen = new BackgroundPanel(new GridBagLayout());
+        setupScreen = new BackgroundPanel(new BorderLayout());
+
+        // Mittleres Panel für die Hauptelemente im GridBagLayout zentriert
+        JPanel centerContainer = new JPanel(new GridBagLayout());
+        centerContainer.setOpaque(false);
 
         JPanel innerPanel = new JPanel(new GridLayout(4, 1, 20, 20));
         innerPanel.setOpaque(false);
@@ -207,11 +211,25 @@ public class GameWindow extends JFrame {
         innerPanel.add(playerSelect);
         innerPanel.add(startButton);
         innerPanel.add(loadButton);
-        setupScreen.add(innerPanel);
+        centerContainer.add(innerPanel);
+
+        // Unteres Panel für den Beendenknopf unten rechts
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 20));
+        bottomPanel.setOpaque(false);
+
+        JButton setupExitButton = new JButton("Beenden");
+        styleButton(setupExitButton);
+        setupExitButton.setFocusable(false);
+        setupExitButton.setForeground(Color.RED);
+        setupExitButton.addActionListener(e -> System.exit(0));
+        bottomPanel.add(setupExitButton);
+
+        setupScreen.add(centerContainer, BorderLayout.CENTER);
+        setupScreen.add(bottomPanel, BorderLayout.SOUTH);
     }
 
     /**
-     * Verarbeitet "Spiel Starten": fragt Spielerzahl und Namen ab, startet die Engine.
+     * Verarbeitet "Spiel Starten": fragt Spielerzahl und Namen ab startet die Engine.
      *
      * @param playerSelect Dropdown mit der Spieleranzahl.
      */
@@ -260,7 +278,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Verarbeitet "Spielstand laden": öffnet den Lade-Dialog und stellt
+     * Verarbeitet "Spielstand laden": öffnet den Ladedialog und stellt
      * Namen und Guthaben aus dem gespeicherten Zustand wieder her.
      */
     private void handleLoadButton() {
@@ -289,7 +307,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Erstellt den Spiel-Screen.
+     * Erstellt den Spielscreen.
      */
     private void buildGameScreen() {
         gameScreen = new BackgroundPanel(new BorderLayout());
@@ -420,7 +438,7 @@ public class GameWindow extends JFrame {
         im.put(KeyStroke.getKeyStroke("ENTER"), "standAction");
         am.put("standAction", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
-                // ENTER nur als Stand werten, wenn das Einsatz-Textfeld NICHT fokussiert ist
+                // ENTER nur als Stand werten wenn das Einsatztextfeld NICHT fokussiert ist
                 if (engine != null && gameScreenReady && standButton.isEnabled()
                         && !betInputField.isFocusOwner()) {
                     engine.playerStand();
@@ -430,8 +448,8 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Verarbeitet die Einsatz-Bestätigung.
-     * Delegiert an {@link GameEngine#confirmBet(int)}, die dann automatisch
+     * Verarbeitet die Einsatzbestätigung.
+     * Delegiert an {@link GameEngine#confirmBet(int)} die dann automatisch
      * den nächsten Spieler oder die Spielphase startet.
      */
     private void handleConfirmBet() {
@@ -470,7 +488,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Erstellt den Ergebnis-Screen.
+     * Erstellt den Ergebnisscreen.
      */
     private void buildResultScreen() {
         resultScreen = new JPanel(new BorderLayout());
@@ -523,7 +541,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Erstellt den Bankrott-Screen.
+     * Erstellt den Bankrottscreen.
      */
     private void buildBankruptScreen() {
         bankruptScreen = new JPanel(new BorderLayout());
@@ -545,11 +563,11 @@ public class GameWindow extends JFrame {
     }
 
     // -------------------------------------------------------------------------
-    // Öffentliche Update-Methoden (von GameEngine aufgerufen)
+    // Updatemethoden (von GameEngine aufgerufen)
     // -------------------------------------------------------------------------
 
     /**
-     * Aktualisiert die Guthaben-Anzeige oben rechts.
+     * Aktualisiert die Guthabenanzeige oben rechts.
      *
      * @param balance    Aktuelles Guthaben in Euro.
      * @param currentBet Aktueller Einsatz in Euro.
@@ -559,7 +577,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Aktualisiert den Info-Text im Spiel-Screen.
+     * Aktualisiert den Infotext im Spielscreen.
      * Bei leerem Text wird die TextArea ausgeblendet.
      *
      * @param text Der anzuzeigende Text.
@@ -570,7 +588,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Aktualisiert den Punktestand-Label.
+     * Aktualisiert den Punktestand.
      *
      * @param score Der neue Punktwert.
      */
@@ -596,7 +614,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Zeigt {@code count} Karten-Rückseiten an.
+     * Zeigt {@code count} Kartenrückseiten an.
      *
      * @param count Anzahl der Rückseiten.
      */
@@ -611,14 +629,14 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Schaltet zwischen Einsatz-Phase und Spielphase um.
+     * Schaltet zwischen Einsatzphase und Spielphase um.
      * <p>
      * Wird von {@link GameEngine} aufgerufen:
-     * {@code showBetUI(true)} → Einsatz-Feld aktiv, Hit/Stand deaktiviert.<br>
-     * {@code showBetUI(false)} → Einsatz-Feld deaktiviert, Hit/Stand aktiv.
+     * {@code showBetUI(true)} → Einsatzfeld aktiv Hit/Stand deaktiviert.<br>
+     * {@code showBetUI(false)} → Einsatzfeld deaktiviert Hit/Stand aktiv.
      * </p>
      *
-     * @param betPhase {@code true} während der Einsatz-Phase, {@code false} während der Spielphase.
+     * @param betPhase {@code true} während der Einsatzphase {@code false} während der Spielphase.
      */
     public void showBetUI(boolean betPhase) {
         setBetButton.setEnabled(betPhase);
@@ -633,7 +651,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Trägt einen Vorschlagswert ins Einsatz-Textfeld ein und markiert ihn,
+     * Trägt einen Vorschlagswert ins Einsatztextfeld ein und markiert ihn
      * sodass der Spieler ihn direkt überschreiben oder mit Enter bestätigen kann.
      *
      * @param amount Der voreinzutragende Betrag.
@@ -647,7 +665,7 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Wechselt zum Ergebnis-Screen.
+     * Wechselt zum Ergebnisscreen.
      *
      * @param resultText  Ergebnistext der Runde.
      * @param bankrupts   Namen der pleite gegangenen Spieler.
@@ -664,8 +682,8 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Setzt alle UI-Elemente für den Start einer neuen Runde zurück.
-     * Einsatz-Phase aktiv, Spielphase deaktiviert.
+     * Setzt alle UI Elemente für den Start einer neuen Runde zurück.
+     * Einsatzphase aktiv Spielphase deaktiviert.
      */
     public void prepareNewRoundUI() {
         if (setBetButton  != null) setBetButton.setEnabled(true);
@@ -676,11 +694,11 @@ public class GameWindow extends JFrame {
     }
 
     /**
-     * Aktiviert oder deaktiviert Hit- und Stand-Button.
-     * Wird von {@link GameEngine} genutzt, um während des Dealer-Zugs
+     * Aktiviert oder deaktiviert Hit und Stand Button.
+     * Wird von {@link GameEngine} genutzt um während des Dealerzugs
      * Spielereingaben zu sperren.
      *
-     * @param enabled {@code true} = Buttons aktiv, {@code false} = gesperrt.
+     * @param enabled {@code true} = Buttons aktiv {@code false} = gesperrt.
      */
     public void setActionButtonsEnabled(boolean enabled) {
         if (hitButton   != null) hitButton.setEnabled(enabled);
@@ -688,21 +706,21 @@ public class GameWindow extends JFrame {
     }
 
     // -------------------------------------------------------------------------
-    // Navigations-Logik
+    // Navigationslogik
     // -------------------------------------------------------------------------
 
     /**
      * Entscheidet welcher Screen als Nächstes gezeigt wird:
      * <ol>
-     * <li>Einzelne Bankrott-Screens abarbeiten.</li>
-     * <li>Nach dem letzten Bankrott-Screen bei Game-Over: finalen Casino-Screen zeigen.</li>
+     * <li>Einzelne Bankrottscreens abarbeiten.</li>
+     * <li>Nach dem letzten Bankrottscreen bei Game Over: finalen Casino Screen zeigen.</li>
      * <li>Noch Spieler übrig → neue Runde starten.</li>
      * <li>engine == null (nach finalem Screen) → Setup.</li>
      * </ol>
      */
     private void checkNextScreen() {
 
-        // 1. Noch Bankrott-Screens ausstehend
+        // 1. Noch Bankrottscreens ausstehend
         if (!currentBankrupts.isEmpty()) {
             String name = currentBankrupts.remove(0);
 
@@ -725,7 +743,7 @@ public class GameWindow extends JFrame {
             return;
         }
 
-        // 2. Alle Bankrott-Screens weg + Game Over → finaler Screen
+        // 2. Alle Bankrottscreens weg + Game Over → finaler Screen
         if (isGameOver) {
             isGameOver = false; // Reset damit nächster Klick in Zweig 4 landet
             engine     = null;  // Spielstand wurde bereits in GameEngine gelöscht

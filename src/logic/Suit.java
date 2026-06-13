@@ -1,9 +1,9 @@
 package logic;
 
 /**
- * Repräsentiert die vier Farben einer Spielkarte im Blackjack-Spiel.
+ * Repräsentiert die vier Farben einer Spielkarte im Blackjackspiel.
  * <p>
- * Jede Farbe besitzt einen lesbaren deutschen Namen, der z.B. für
+ * Jede Farbe besitzt einen lesbaren deutschen Namen der zum Beispiel für
  * die Ausgabe in der Konsole oder in {@link Card#toString()} verwendet wird.
  * </p>
  *
@@ -12,16 +12,16 @@ package logic;
  */
 public enum Suit {
 
-    /** Herzfarbe (rot, Herz-Symbol). */
+    /** Herzfarbe (rot Herz-Symbol). */
     HERZ("Herz"),
 
-    /** Pikfarbe (schwarz, Pik-Symbol). */
+    /** Pikfarbe (schwarz Pik-Symbol). */
     PIK("Pik"),
 
-    /** Kreuzfarbe (schwarz, Kreuz-Symbol). */
+    /** Kreuzfarbe (schwarz Kreuz-Symbol). */
     KREUZ("Kreuz"),
 
-    /** Karofarbe (rot, Karo-Symbol). */
+    /** Karofarbe (rot Karo-Symbol). */
     KARO("Karo");
 
     /** Der lesbare deutsche Name der Kartenfarbe. */
@@ -30,7 +30,7 @@ public enum Suit {
     /**
      * Erstellt eine Kartenfarbe mit dem angegebenen Anzeigenamen.
      *
-     * @param name Der deutsche Name der Farbe (z.B. {@code "Herz"}).
+     * @param name Der deutsche Name der Farbe wie etwa {@code "Herz"}.
      */
     Suit(String name) {
         this.name = name;
@@ -39,7 +39,7 @@ public enum Suit {
     /**
      * Gibt den lesbaren deutschen Namen der Kartenfarbe zurück.
      *
-     * @return Der Anzeigename als String (z.B. {@code "Herz"}).
+     * @return Der Anzeigename als String wie etwa {@code "Herz"}.
      */
     public String getName() {
         return name;

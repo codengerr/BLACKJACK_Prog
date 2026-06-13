@@ -8,8 +8,8 @@ import java.util.Collections;
  * <p>
  * Das Deck besteht aus allen Kombinationen der vier {@link Suit Farben}
  * mit den 13 {@link Rank Werten}. Beim Erstellen und nach jedem
- * {@link #refillAndShuffle()}-Aufruf ist das Deck vollständig und gemischt.
- * Ist das Deck leer, wird es beim nächsten {@link  #drawCard()}-Aufruf
+ * {@link #refillAndShuffle()} Aufruf ist das Deck vollständig und gemischt.
+ * Ist das Deck leer wird es beim nächsten {@link #drawCard()} Aufruf
  * automatisch neu aufgefüllt.
  * </p>
  *
@@ -18,11 +18,11 @@ import java.util.Collections;
  */
 public class Deck {
 
-    /** Die Kartenliste, aus der gezogen wird. Oberste Karte ist das letzte Element. */
+    /** Die Kartenliste aus der gezogen wird. Oberste Karte ist das letzte Element. */
     private ArrayList<Card> cards;
 
     /**
-     * Erstellt ein neues, vollständig befülltes und gemischtes Deck.
+     * Erstellt ein neues vollständig befülltes und gemischtes Deck.
      * Entspricht dem Aufruf von {@link #refillAndShuffle()}.
      */
     public Deck() {
@@ -49,8 +49,8 @@ public class Deck {
     /**
      * Zieht die oberste Karte vom Deck und gibt sie zurück.
      * <p>
-     * Ist das Deck leer (alle 52 Karten wurden bereits gezogen),
-     * wird es automatisch neu aufgefüllt und gemischt, bevor eine
+     * Ist das Deck leer (alle 52 Karten wurden bereits gezogen)
+     * wird es automatisch neu aufgefüllt und gemischt bevor eine
      * Karte zurückgegeben wird.
      * </p>
      *

@@ -9,9 +9,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 /**
- * Ein erweitertes {@link JLabel}, das seinen Text mit einem farbigen Umriss rendert.
+ * Ein erweitertes {@link JLabel} das seinen Text mit einem farbigen Umriss rendert.
  * <p>
- * Der Umriss wird durch 8-faches Zeichnen des Textes in der Umrissfarbe erzeugt,
+ * Der Umriss wird durch 8-faches Zeichnen des Textes in der Umrissfarbe erzeugt
  * bevor der eigentliche Text in der Vordergrundfarbe gezeichnet wird.
  * Umrissfarbe und Textfarbe sind über den Konstruktor konfigurierbar.
  * </p>
@@ -28,8 +28,8 @@ public class OutlinedLabel extends JLabel {
     private float outlineWidth;
 
     /**
-     * Erstellt ein {@code OutlinedLabel} mit Standard-Styling
-     * (schwarzer Umriss, roter Text).
+     * Erstellt ein {@code OutlinedLabel} mit Standardstyling
+     * (schwarzer Umriss roter Text).
      *
      * @param text      Der anzuzeigende Text.
      * @param alignment Die horizontale Ausrichtung (z.B. {@link javax.swing.SwingConstants#CENTER}).
@@ -77,7 +77,7 @@ public class OutlinedLabel extends JLabel {
     /**
      * Zeichnet den Text mit Umriss. Wird automatisch von Swing aufgerufen.
      *
-     * @param g Das {@link Graphics}-Objekt für das Zeichnen.
+     * @param g Das {@link Graphics} Objekt für das Zeichnen.
      */
     @Override
     protected void paintComponent(Graphics g) {

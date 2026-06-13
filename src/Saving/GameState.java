@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Datenklasse, die den vollständigen Zustand eines gespeicherten Spiels enthält.
+ * Datenklasse die den vollständigen Zustand eines gespeicherten Spiels enthält.
  * <p>
  * Wird von {@link SaveGameManager} in JSON serialisiert und deserialisiert.
- * Enthält keine Spiellogik – nur die reinen Daten.
+ * Enthält keine Spiellogik sondern nur die reinen Daten.
  * </p>
  *
  * @author  Elias
@@ -17,16 +17,16 @@ import java.util.List;
  */
 public class GameState {
 
-    /** Eindeutige ID des Spielstands (z.B. "save_1"). */
+    /** Eindeutige ID des Spielstands wie etwa "save_1". */
     private String id;
 
-    /** Anzeigename / Beschriftung des Spielstands (z.B. "Runde 5 – 3 Spieler"). */
+    /** Anzeigename oder Beschriftung des Spielstands wie etwa "Runde 5 – 3 Spieler". */
     private String label;
 
-    /** Zeitstempel des Speichervorgangs (lesbar, z.B. "04.06.2026 14:32"). */
+    /** Zeitstempel des Speichervorgangs in lesbarer Form wie etwa "04.06.2026 14:32". */
     private String savedAt;
 
-    /** Liste der gespeicherten Spieler-Einträge. */
+    /** Liste der gespeicherten Spieler Einträge. */
     private List<PlayerEntry> players;
 
     // -------------------------------------------------------------------------
@@ -34,7 +34,7 @@ public class GameState {
     // -------------------------------------------------------------------------
 
     /**
-     * Leerer Konstruktor – wird für JSON-Deserialisierung benötigt.
+     * Leerer Konstruktor – wird für die JSON Deserialisierung benötigt.
      */
     public GameState() {
         this.players = new ArrayList<>();
@@ -46,7 +46,7 @@ public class GameState {
      * @param id      Eindeutige ID.
      * @param label   Anzeigename.
      * @param savedAt Zeitstempel als String.
-     * @param players Liste der {@link PlayerEntry}-Objekte.
+     * @param players Liste der {@link PlayerEntry} Objekte.
      */
     public GameState(String id, String label, String savedAt, List<PlayerEntry> players) {
         this.id      = id;
@@ -88,11 +88,11 @@ public class GameState {
     // -------------------------------------------------------------------------
 
     /**
-     * Erstellt einen lesbaren Anzeige-String für die Ladeauswahl.
+     * Erstellt einen lesbaren Anzeige String für die Ladeauswahl.
      * Bei mehr als 3 Spielern wird nur die Anzahl angezeigt.
      *
-     * @return Formatierter String, z.B. "Save #1 | Anna, Ben, Clara | 04.06.2026"
-     *         oder "Save #1 | 5 Spieler | 04.06.2026"
+     * @return Formatierter String wie etwa "Save #1 | Anna Ben Clara | 04.06.2026"
+     * oder "Save #1 | 5 Spieler | 04.06.2026"
      */
     public String toDisplayString() {
         String playerInfo;
@@ -115,7 +115,7 @@ public class GameState {
     /**
      * Gibt eine kompakte Darstellung des Spielstands zurück.
      *
-     * @return ID, Label, Zeitstempel und Spieleranzahl als String.
+     * @return ID Label Zeitstempel und Spieleranzahl als String.
      */
     @Override
     public String toString() {
@@ -123,9 +123,9 @@ public class GameState {
                 + "', savedAt='" + savedAt + "', players=" + players.size() + "}";
     }
 
-    // =========================================================================
-    // INNERE KLASSE: PlayerEntry
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Innere Klasse: PlayerEntry
+    // -------------------------------------------------------------------------
 
     /**
      * Repräsentiert die gespeicherten Daten eines einzelnen Spielers.
@@ -140,12 +140,12 @@ public class GameState {
         private int balance;
 
         /**
-         * Leerer Konstruktor – für JSON-Deserialisierung.
+         * Leerer Konstruktor – für die JSON Deserialisierung.
          */
         public PlayerEntry() {}
 
         /**
-         * Erstellt einen neuen Spieler-Eintrag.
+         * Erstellt einen neuen Spieler Eintrag.
          *
          * @param name    Name des Spielers.
          * @param balance Guthaben in Euro.

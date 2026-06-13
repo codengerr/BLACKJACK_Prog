@@ -4,18 +4,20 @@ package logic;
  * Repräsentiert eine einzelne Spielkarte mit Farbe ({@link Suit}) und
  * Wert ({@link Rank}).
  * <p>
- * Diese Klasse gehört zur <em>Logik-Schicht</em> und enthält bewusst * <strong>keine</strong> GUI-Abhängigkeiten. Das Laden von Bildern
- * übernimmt die GUI-Schicht (z.B. ein {@code CardImageLoader}). * </p>
+ * Diese Klasse gehört zur <em>Logikschicht</em> und enthält bewusst
+ * <strong>keine</strong> GUIAbhängigkeiten. Das Laden von Bildern
+ * übernimmt die GUISchicht (z.B. ein {@code CardImageLoader}).
+ * </p>
  *
  * @author  Elias
  * @version 1.0
  */
 public class Card {
 
-    /** Die Farbe der Karte (Herz, Pik, Karo, Kreuz). */
+    /** Die Farbe der Karte (Herz Pik Karo Kreuz). */
     private final Suit suit;
 
-    /** Der Wert der Karte (Ass, Zwei, ..., König). */
+    /** Der Wert der Karte (Ass Zwei ... König). */
     private final Rank rank;
 
     /**
@@ -48,7 +50,7 @@ public class Card {
     }
 
     /**
-     * Gibt den Punktwert dieser Karte für die Blackjack-Wertung zurück.
+     * Gibt den Punktwert dieser Karte für die Blackjack Wertung zurück.
      * Asse zählen initial als 11 – die Anpassung auf 1 erfolgt in
      * {@link Participant#calculateScore()}.
      *

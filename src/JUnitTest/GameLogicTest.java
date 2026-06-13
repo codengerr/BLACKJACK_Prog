@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit-Tests für die Kernlogik des Blackjack-Spiels.
+ * JUnit Tests für die Kernlogik des Blackjack-Spiels.
  */
 public class GameLogicTest {
 
@@ -50,7 +50,7 @@ public class GameLogicTest {
         testPlayer.addCard(new Card(Suit.KARO, Rank.ASS));
 
         // 10 + 8 + 11 = 29 -> Ass wird zu 1 -> 19
-        assertEquals(19, testPlayer.calculateScore(), "Das Ass sollte auf 1 reduziert werden, um einen Überkauf zu verhindern.");
+        assertEquals(19, testPlayer.calculateScore(), "Das Ass sollte auf 1 reduziert werden um einen Überkauf zu verhindern.");
     }
 
     @Test

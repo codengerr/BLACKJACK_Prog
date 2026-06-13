@@ -9,25 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Verwaltet das Speichern und Laden von Spielständen im JSON-Format.
+ * Verwaltet das Speichern und Laden von Spielständen im JSONFormat.
  * <p>
  * Die Spielstände werden in der Datei {@value #SAVE_FILE} abgelegt.
- * Da das Projekt keine externen Bibliotheken nutzt, wird JSON manuell
- * geparst und generiert (kein Gson / Jackson).
+ * Da das Projekt keine externen Bibliotheken nutzt wird JSON manuell
+ * geparst und generiert ohne Hilfsmittel wie Gson oder Jackson.
  * </p>
  * <p>
- * Format der JSON-Datei:
+ * Format der JSONDatei:
  * <pre>
  * [
- *   {
- *     "id": "save_1",
- *     "label": "Runde 5",
- *     "savedAt": "04.06.2026 14:32",
- *     "players": [
- *       { "name": "Anna", "balance": 120 },
- *       { "name": "Ben",  "balance": 80  }
- *     ]
- *   }
+ * {
+ * "id": "save_1"
+ * "label": "Runde 5"
+ * "savedAt": "04.06.2026 14:32"
+ * "players": [
+ * { "name": "Anna" "balance": 120 }
+ * { "name": "Ben"  "balance": 80  }
+ * ]
+ * }
  * ]
  * </pre>
  * </p>
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class SaveGameManager {
 
-    /** Pfad zur JSON-Speicherdatei. */
+    /** Pfad zur JSONSpeicherdatei. */
     private static final String SAVE_FILE = "saves/savegames.json";
 
     /** Maximale Anzahl gleichzeitig gespeicherter Spielstände. */
@@ -53,13 +53,13 @@ public class SaveGameManager {
 
     /**
      * Speichert einen neuen Spielstand. Die Liste der vorhandenen Spielstände
-     * wird geladen, der neue Eintrag hinzugefügt und alles zurückgeschrieben.
-     * Gibt es bereits {@value #MAX_SAVES} Einträge, wird der älteste überschrieben.
+     * wird geladen der neue Eintrag hinzugefügt und alles zurückgeschrieben.
+     * Gibt es bereits {@value #MAX_SAVES} Einträge wird der älteste überschrieben.
      *
-     * @param players Liste von {@link GameState.PlayerEntry}-Objekten mit Namen und Guthaben.
+     * @param players Liste von {@link GameState.PlayerEntry} Objekten mit Namen und Guthaben.
      * @param label   Optionaler Anzeigename (darf leer sein).
      * @return Die ID des neu erstellten Spielstands.
-     * @throws IOException bei Schreib-/Lesefehlern.
+     * @throws IOException bei Schreibfehler oder Lesefehler.
      */
     public static String saveGame(List<GameState.PlayerEntry> players, String label) throws IOException {
         List<GameState> allSaves = loadAllSaves();
@@ -67,7 +67,7 @@ public class SaveGameManager {
         // Neue ID generieren
         String newId = "save_" + (System.currentTimeMillis() % 100000);
 
-        // Label aufbauen, falls leer
+        // Label aufbauen falls leer
         if (label == null || label.trim().isEmpty()) {
             label = buildAutoLabel(players);
         }
@@ -86,10 +86,10 @@ public class SaveGameManager {
     }
 
     /**
-     * Lädt alle gespeicherten Spielstände aus der JSON-Datei.
-     * Existiert die Datei nicht, wird eine leere Liste zurückgegeben.
+     * Lädt alle gespeicherten Spielstände aus der JSONDatei.
+     * Existiert die Datei nicht wird eine leere Liste zurückgegeben.
      *
-     * @return Liste aller {@link GameState}-Objekte, nie {@code null}.
+     * @return Liste aller {@link GameState} Objekte und niemals {@code null}.
      */
     public static List<GameState> loadAllSaves() {
         File file = new File(SAVE_FILE);
@@ -109,8 +109,8 @@ public class SaveGameManager {
     /**
      * Lädt einen einzelnen Spielstand anhand seiner ID.
      *
-     * @param id Die gesuchte Spielstand-ID.
-     * @return Das passende {@link GameState}-Objekt, oder {@code null} wenn nicht gefunden.
+     * @param id Die gesuchte Spielstand ID.
+     * @return Das passende {@link GameState} Objekt oder {@code null} wenn nicht gefunden.
      */
     public static GameState loadById(String id) {
         for (GameState state : loadAllSaves()) {
@@ -125,7 +125,7 @@ public class SaveGameManager {
      * Löscht einen Spielstand anhand seiner ID.
      *
      * @param id Die ID des zu löschenden Spielstands.
-     * @return {@code true} wenn erfolgreich gelöscht, {@code false} wenn nicht gefunden.
+     * @return {@code true} wenn erfolgreich gelöscht oder {@code false} wenn nicht gefunden.
      * @throws IOException bei Schreibfehlern.
      */
     public static boolean deleteSave(String id) throws IOException {
@@ -169,10 +169,10 @@ public class SaveGameManager {
     }
 
     /**
-     * Serialisiert ein einzelnes {@link GameState}-Objekt als JSON-String.
+     * Serialisiert ein einzelnes {@link GameState} Objekt als JSONString.
      *
      * @param state Das zu serialisierende Objekt.
-     * @return JSON-Darstellung als String.
+     * @return JSONDarstellung als String.
      */
     private static String toJson(GameState state) {
         StringBuilder sb = new StringBuilder();
@@ -201,9 +201,9 @@ public class SaveGameManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Parst eine JSON-Array-Zeichenkette in eine Liste von {@link GameState}-Objekten.
+     * Parst eine JSONArrayZeichenkette in eine Liste von {@link GameState} Objekten.
      *
-     * @param json Der vollständige JSON-String (Array).
+     * @param json Der vollständige JSONString als Array.
      * @return Die geparste Liste.
      */
     private static List<GameState> parseJsonArray(String json) {
@@ -213,7 +213,7 @@ public class SaveGameManager {
         if (json.startsWith("[")) json = json.substring(1);
         if (json.endsWith("]"))   json = json.substring(0, json.length() - 1);
 
-        // Jedes Objekt { ... } einzeln extrahieren
+        // Jedes Objekt einzeln extrahieren
         List<String> objects = splitJsonObjects(json);
         for (String obj : objects) {
             try {
@@ -226,10 +226,10 @@ public class SaveGameManager {
     }
 
     /**
-     * Teilt einen JSON-String in einzelne Objekt-Blöcke auf (auf Basis von { }).
+     * Teilt einen JSONString in einzelne Objektblöcke auf Basis von geschweiften Klammern.
      *
      * @param json Der zu teilende String.
-     * @return Liste der Objekt-Strings.
+     * @return Liste der Objektstrings.
      */
     private static List<String> splitJsonObjects(String json) {
         List<String> objects = new ArrayList<>();
@@ -253,9 +253,9 @@ public class SaveGameManager {
     }
 
     /**
-     * Parst einen einzelnen JSON-Objekt-String in ein {@link GameState}-Objekt.
+     * Parst einen einzelnen JSONObjectString in ein {@link GameState} Objekt.
      *
-     * @param json Der JSON-String des Objekts.
+     * @param json Der JSONString des Objekts.
      * @return Das erstellte {@link GameState}.
      */
     private static GameState parseGameState(String json) {
@@ -264,7 +264,7 @@ public class SaveGameManager {
         state.setLabel(extractString(json, "label"));
         state.setSavedAt(extractString(json, "savedAt"));
 
-        // Spieler-Array extrahieren
+        // SpielerArray extrahieren
         int playersStart = json.indexOf("\"players\"");
         if (playersStart != -1) {
             int arrStart = json.indexOf('[', playersStart);
@@ -278,10 +278,10 @@ public class SaveGameManager {
     }
 
     /**
-     * Parst das Spieler-Array aus einem JSON-String.
+     * Parst das SpielerArray aus einem JSONString.
      *
-     * @param json Der JSON-Array-String der Spieler.
-     * @return Liste der {@link GameState.PlayerEntry}-Objekte.
+     * @param json Der JSONArrayString der Spieler.
+     * @return Liste der {@link GameState.PlayerEntry} Objekte.
      */
     private static List<GameState.PlayerEntry> parsePlayers(String json) {
         List<GameState.PlayerEntry> players = new ArrayList<>();
@@ -300,10 +300,10 @@ public class SaveGameManager {
     }
 
     /**
-     * Extrahiert den String-Wert eines JSON-Felds.
-     * Beispiel: {@code "name": "Anna"} → {@code "Anna"}
+     * Extrahiert den Stringwert eines JSONFelds.
+     * Beispiel: name Anna liefert Anna
      *
-     * @param json  Der JSON-String.
+     * @param json  Der JSONString.
      * @param field Der Feldname.
      * @return Den extrahierten Wert oder einen leeren String.
      */
@@ -319,12 +319,12 @@ public class SaveGameManager {
     }
 
     /**
-     * Extrahiert den Rohwert (ohne Anführungszeichen) eines JSON-Felds.
-     * Nützlich für Zahlen-Felder wie {@code "balance": 120}.
+     * Extrahiert den Rohwert ohne Anführungszeichen eines JSONFelds.
+     * Nützlich für Zahlenfelder wie balance 120.
      *
-     * @param json  Der JSON-String.
+     * @param json  Der JSONString.
      * @param field Der Feldname.
-     * @return Den extrahierten Rohwert oder "0".
+     * @return Den extrahierten Rohwert oder die Zeichenkette 0.
      */
     private static String extractValue(String json, String field) {
         String key = "\"" + field + "\"";
@@ -339,7 +339,7 @@ public class SaveGameManager {
     }
 
     /**
-     * Escaped Sonderzeichen in einem String für die JSON-Ausgabe.
+     * Escaped Sonderzeichen in einem String für die JSONAusgabe.
      *
      * @param s Der zu escapende String.
      * @return Den escapten String.
@@ -358,7 +358,7 @@ public class SaveGameManager {
 
     /**
      * Generiert automatisch ein Label aus der Spielerliste.
-     * Bei ≤ 3 Spielern werden alle Namen aufgelistet, sonst nur die Anzahl.
+     * Bei maximal drei Spielern werden alle Namen aufgelistet sonst nur die Anzahl.
      *
      * @param players Die Spielerliste.
      * @return Ein lesbares Label.

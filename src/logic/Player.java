@@ -1,12 +1,12 @@
 package logic;
 
 /**
- * Repräsentiert einen menschlichen Spieler im Blackjack-Spiel.
+ * Repräsentiert einen menschlichen Spieler im Blackjackspiel.
  * <p>
  * Erbt Kartenverwaltung und Punkteberechnung von {@link Participant}.
  * Verwaltet zusätzlich Guthaben und Einsatz des Spielers.
  * Der eigentliche Spielzug wird über die GUI gesteuert – {@link #makeTurn(GameEngine)}
- * dient hier nur als Auslöser, damit die Engine den richtigen Spieler aktiviert.
+ * dient hier nur als Auslöser damit die Engine den richtigen Spieler aktiviert.
  * </p>
  *
  * @author  Elias
@@ -27,7 +27,7 @@ public class Player extends Participant {
     private int currentBet;
 
     /**
-     * Erstellt einen neuen Spieler mit dem angegebenen Namen,
+     * Erstellt einen neuen Spieler mit dem angegebenen Namen
      * Startkapital und Standard-Einsatz.
      *
      * @param name Der Anzeigename des Spielers.
@@ -39,16 +39,16 @@ public class Player extends Participant {
     }
 
     /**
-     * Wird von der {@link GameEngine} aufgerufen, wenn dieser Spieler am Zug ist.
-     * Da der Zug über GUI-Buttons gesteuert wird, muss hier nichts weiter passieren –
+     * Wird von der {@link GameEngine} aufgerufen wenn dieser Spieler am Zug ist.
+     * Da der Zug über GUI Buttons gesteuert wird muss hier nichts weiter passieren –
      * die Engine wartet auf {@code playerHit()} oder {@code playerStand()}.
      *
      * @param engine Die aktive {@link GameEngine}.
      */
     @Override
     public void makeTurn(GameEngine engine) {
-        // Spielerzug läuft über GUI-Events (Hit/Stand-Buttons).
-        // Kein automatischer Zug nötig.
+        // Spielerzug läuft über GUI Events wie etwa Hit oder Stand Buttons
+        // Kein automatischer Zug nötig
     }
 
     // -------------------------------------------------------------------------
@@ -75,7 +75,7 @@ public class Player extends Participant {
 
     /**
      * Setzt das Guthaben direkt auf einen bestimmten Wert.
-     * Wird ausschließlich beim Laden eines Spielstands verwendet,
+     * Wird ausschließlich beim Laden eines Spielstands verwendet
      * um das gespeicherte Guthaben wiederherzustellen.
      * Negative Werte werden auf 0 begrenzt.
      *
@@ -105,11 +105,11 @@ public class Player extends Participant {
     }
 
     // -------------------------------------------------------------------------
-    // Einsatz-Anpassung
+    // Einsatzanpassung
     // -------------------------------------------------------------------------
 
     /**
-     * Erhöht den aktuellen Einsatz um den angegebenen Betrag,
+     * Erhöht den aktuellen Einsatz um den angegebenen Betrag
      * sofern das Guthaben ausreicht.
      *
      * @param amount Der Erhöhungsbetrag in Euro.
@@ -121,7 +121,7 @@ public class Player extends Participant {
     }
 
     /**
-     * Verringert den aktuellen Einsatz um den angegebenen Betrag,
+     * Verringert den aktuellen Einsatz um den angegebenen Betrag
      * sofern der Mindesteinsatz nicht unterschritten wird.
      *
      * @param amount Der Verringerungsbetrag in Euro.
@@ -137,7 +137,7 @@ public class Player extends Participant {
     // -------------------------------------------------------------------------
 
     /**
-     * Verarbeitet einen Gewinn: Guthaben wird um den Einsatz erhöht,
+     * Verarbeitet einen Gewinn: Guthaben wird um den Einsatz erhöht
      * Einsatz wird auf den Mindestwert zurückgesetzt.
      */
     public void winBet() {
@@ -146,7 +146,7 @@ public class Player extends Participant {
     }
 
     /**
-     * Verarbeitet einen Verlust: Guthaben wird um den Einsatz verringert,
+     * Verarbeitet einen Verlust: Guthaben wird um den Einsatz verringert
      * Einsatz wird auf den Mindestwert zurückgesetzt.
      */
     public void loseBet() {
@@ -155,7 +155,7 @@ public class Player extends Participant {
     }
 
     /**
-     * Verarbeitet ein Unentschieden (Push): Guthaben bleibt unverändert,
+     * Verarbeitet ein Unentschieden beziehungsweise einen Push: Guthaben bleibt unverändert
      * Einsatz wird auf den Mindestwert zurückgesetzt.
      */
     public void pushBet() {
@@ -165,7 +165,7 @@ public class Player extends Participant {
     /**
      * Gibt eine lesbare Zusammenfassung des Spielers zurück.
      *
-     * @return Name, Guthaben, Einsatz und aktuelle Hand als String.
+     * @return Name Guthaben Einsatz und aktuelle Hand als String.
      */
     @Override
     public String toString() {
