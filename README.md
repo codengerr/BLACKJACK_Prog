@@ -1,4 +1,4 @@
-#  Blackjack Casino (Entwickelt als Java-Studienprojekt)
+#  Blackjack Casino (Entwickelt als Java-Studienprojekt Wunschnote 1)
 
 Ein vollständig in Java geschriebenes, lokales Multiplayer-Blackjack-Spiel mit einer grafischen Benutzeroberfläche (GUI) und einem eigenen JSON-Speichersystem. 
 
