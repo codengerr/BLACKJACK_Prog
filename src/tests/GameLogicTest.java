@@ -1,4 +1,4 @@
-package JUnitTest;
+package tests;
 
 import logic.*;
 import org.junit.jupiter.api.BeforeEach;
