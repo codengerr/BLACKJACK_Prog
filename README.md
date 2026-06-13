@@ -1,4 +1,4 @@
-#  Blackjack Casino (Java Swing)
+#  Blackjack Casino (Entwickelt als Java-Studienprojekt)
 
 Ein vollständig in Java geschriebenes, lokales Multiplayer-Blackjack-Spiel mit einer grafischen Benutzeroberfläche (GUI) und einem eigenen JSON-Speichersystem. 
 
@@ -30,3 +30,6 @@ Das Spiel kann komplett mit der Maus oder (für den Spielfluss deutlich angenehm
 1. **Repository klonen:**
    ```bash
    git clone [https://github.com/codengerr/BLACKJACK_Prog.git](https://github.com/codengerr/BLACKJACK_Prog.git)
+   ```
+
+   
