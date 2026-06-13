@@ -4,7 +4,7 @@ Ein vollständig in Java geschriebenes, lokales Multiplayer-Blackjack-Spiel mit 
 
 Dieses Projekt wurde komplett ohne externe Bibliotheken entwickelt. Alle UI-Elemente basieren auf purem `javax.swing` und selbst die JSON-Serialisierung für die Spielstände wurde händisch implementiert.
 
-## ✨ Features
+##  Features
 
 * **Lokaler Multiplayer:** Spielbar für 1 bis 10 Spieler gleichzeitig an einem PC.
 * **Grafische Benutzeroberfläche:** Animierte Screens, Custom-Buttons und echte Karten-Sprites.
@@ -12,7 +12,7 @@ Dieses Projekt wurde komplett ohne externe Bibliotheken entwickelt. Alle UI-Elem
 * **Eigenes Save-System:** Spielerstände und Guthaben können in `.json`-Dateien gespeichert und geladen werden (inkl. Sortierfunktion nach Datum, ID oder Kontostand).
 
 
-## 🎮 Steuerung
+##  Steuerung
 
 Das Spiel kann komplett mit der Maus oder (für den Spielfluss deutlich angenehmer) mit der Tastatur bedient werden:
 * **Einsatz bestätigen:** `ENTER`
@@ -20,12 +20,12 @@ Das Spiel kann komplett mit der Maus oder (für den Spielfluss deutlich angenehm
 * **Stand (Keine Karte mehr):** `ENTER`
 * **Nächste Runde (im Ergebnisscreen):** Beliebige Taste
 
-## 🛠️ Systemvoraussetzungen
+##  Systemvoraussetzungen
 
 * **Java Version:** JDK 14 oder neuer (empfohlen: **Java 17+**), da moderne Switch-Expressions (`switch (suit) { case HERZ -> ... }`) verwendet werden.
 * **Keine externen Bibliotheken:** 
 
-## 🚀 Installation & Start
+##  Installation & Start
 
 1. **Repository klonen:**
    ```bash
