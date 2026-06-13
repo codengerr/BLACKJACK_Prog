@@ -31,5 +31,30 @@ Das Spiel kann komplett mit der Maus oder (für den Spielfluss deutlich angenehm
    ```bash
    git clone [https://github.com/codengerr/BLACKJACK_Prog.git](https://github.com/codengerr/BLACKJACK_Prog.git)
    ```
+   
+*   Projekt öffnen:
+   Öffne den Ordner in deiner bevorzugten IDE (z. B. IntelliJ IDEA oder Eclipse).
+   
+
+*   Ressourcen prüfen:
+   Stelle sicher, dass der Ordner resources (mit den Bildern Karten.png, table.png und CardBack.png) im Stammverzeichnis des Projekts liegt.
+
+
+*   Spiel starten:
+   Führe die Main.java aus.
+
+## Dateistruktur
+
+*   src/GUI/ - Beinhaltet alle visuellen Komponenten (Screens, Buttons, ImageLoader).
+
+
+*   src/logic/ - Das Herzstück des Spiels. Beinhaltet die GameEngine, Deck, Card und Teilnehmer-Logik.
+
+
+*   src/Saving/ - Handhabt das Lesen, Schreiben und Parsen der JSON-Savegames (SaveGameManager).
+
+
+*   resources/ - Beinhaltet die grafischen Assets (Karten, Rückseiten, Tisch).
+
 
    
