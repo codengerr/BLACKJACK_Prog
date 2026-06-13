@@ -100,9 +100,9 @@ public class GameWindow extends JFrame {
         cardLayout.show(mainContainer, "SETUP");
     }
 
-    // =========================================================================
-    // INNERE KLASSE: Hintergrund-Panel
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Innere Klasse: Hintergrund-Panel
+    // -------------------------------------------------------------------------
 
     /**
      * {@link JPanel} das ein skalierbares Hintergrundbild zeichnet.
@@ -134,9 +134,9 @@ public class GameWindow extends JFrame {
         }
     }
 
-    // =========================================================================
-    // HILFSMETHODEN
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Hilfsmethoden
+    // -------------------------------------------------------------------------
 
     /**
      * Wendet einheitliches dunkles Styling auf einen Button an.
@@ -166,9 +166,9 @@ public class GameWindow extends JFrame {
         t.start();
     }
 
-    // =========================================================================
-    // SCREEN-AUFBAU
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Screen-Aufbau
+    // -------------------------------------------------------------------------
 
     /**
      * Erstellt den Setup-Screen mit Spieleranzahl-Auswahl, Start- und Lade-Button.
@@ -282,7 +282,7 @@ public class GameWindow extends JFrame {
         }
 
         engine.setWindow(this);
-        engine.setLoadedSaveId(loaded.getId()); // damit Engine den Save bei Game-Over löscht
+        engine.setLoadedSaveId(loaded.getId()); // damit Engine den Save bei Game Over löscht
         prepareNewRoundUI();
         engine.startNewRound();
         switchToGameWithDelay();
@@ -294,7 +294,7 @@ public class GameWindow extends JFrame {
     private void buildGameScreen() {
         gameScreen = new BackgroundPanel(new BorderLayout());
 
-        // --- TOP ---
+        // Oben
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
@@ -319,7 +319,7 @@ public class GameWindow extends JFrame {
         topPanel.add(scrollPane,   BorderLayout.CENTER);
         topPanel.add(balanceLabel, BorderLayout.EAST);
 
-        // --- CENTER ---
+        // Mitte
         JPanel centerWrapper = new JPanel(new BorderLayout());
         centerWrapper.setOpaque(false);
 
@@ -334,7 +334,7 @@ public class GameWindow extends JFrame {
         centerWrapper.add(scoreLabel, BorderLayout.NORTH);
         centerWrapper.add(cardPanel,  BorderLayout.CENTER);
 
-        // --- BOTTOM ---
+        // Unten
         JPanel buttonPanel = new JPanel(new BorderLayout());
         buttonPanel.setOpaque(false);
 
@@ -383,6 +383,9 @@ public class GameWindow extends JFrame {
         styleButton(saveButton);
         styleButton(menuButton);
         styleButton(exitButton);
+        saveButton.setFocusable(false); // Damit man mit der Leertaste spielen kann
+        menuButton.setFocusable(false);
+        exitButton.setFocusable(false);
         saveButton.setForeground(new Color(100, 200, 255));
         menuButton.setForeground(Color.ORANGE);
         exitButton.setForeground(Color.RED);
@@ -403,7 +406,7 @@ public class GameWindow extends JFrame {
         gameScreen.add(centerWrapper, BorderLayout.CENTER);
         gameScreen.add(buttonPanel,   BorderLayout.SOUTH);
 
-        // Key Bindings
+        // Tastenbelegungen
         InputMap  im = gameScreen.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = gameScreen.getActionMap();
 
@@ -417,7 +420,7 @@ public class GameWindow extends JFrame {
         im.put(KeyStroke.getKeyStroke("ENTER"), "standAction");
         am.put("standAction", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
-                // ENTER nur als Stand werten wenn das Einsatz-Textfeld NICHT fokussiert ist
+                // ENTER nur als Stand werten, wenn das Einsatz-Textfeld NICHT fokussiert ist
                 if (engine != null && gameScreenReady && standButton.isEnabled()
                         && !betInputField.isFocusOwner()) {
                     engine.playerStand();
@@ -541,9 +544,9 @@ public class GameWindow extends JFrame {
         bankruptScreen.add(weiterButton,  BorderLayout.SOUTH);
     }
 
-    // =========================================================================
-    // ÖFFENTLICHE UPDATE-METHODEN (von GameEngine aufgerufen)
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Öffentliche Update-Methoden (von GameEngine aufgerufen)
+    // -------------------------------------------------------------------------
 
     /**
      * Aktualisiert die Guthaben-Anzeige oben rechts.
@@ -684,17 +687,17 @@ public class GameWindow extends JFrame {
         if (standButton != null) standButton.setEnabled(enabled);
     }
 
-    // =========================================================================
-    // NAVIGATIONS-LOGIK
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // Navigations-Logik
+    // -------------------------------------------------------------------------
 
     /**
      * Entscheidet welcher Screen als Nächstes gezeigt wird:
      * <ol>
-     *   <li>Einzelne Bankrott-Screens abarbeiten.</li>
-     *   <li>Nach dem letzten Bankrott-Screen bei Game-Over: finalen Casino-Screen zeigen.</li>
-     *   <li>Noch Spieler übrig → neue Runde starten.</li>
-     *   <li>engine == null (nach finalem Screen) → Setup.</li>
+     * <li>Einzelne Bankrott-Screens abarbeiten.</li>
+     * <li>Nach dem letzten Bankrott-Screen bei Game-Over: finalen Casino-Screen zeigen.</li>
+     * <li>Noch Spieler übrig → neue Runde starten.</li>
+     * <li>engine == null (nach finalem Screen) → Setup.</li>
      * </ol>
      */
     private void checkNextScreen() {
