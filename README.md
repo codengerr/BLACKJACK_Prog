@@ -8,7 +8,7 @@ Dieses Projekt wurde komplett ohne externe Bibliotheken entwickelt. Alle UI-Elem
 
 * **Lokaler Multiplayer:** Spielbar für 1 bis 10 Spieler gleichzeitig an einem PC.
 * **Grafische Benutzeroberfläche:** Animierte Screens, Custom-Buttons und echte Karten-Sprites.
-* **Intelligenter Dealer:** Der Croupier zieht vollautomatisch über einen Swing-Timer basierend auf den echten Blackjack-Regeln (zieht bis 16, steht bei 17).
+* **Intelligenter Dealer:** Der Dealer zieht vollautomatisch über einen Swing-Timer basierend auf den echten Blackjack-Regeln (zieht bis 16, steht bei 17).
 * **Eigenes Save-System:** Spielerstände und Guthaben können in `.json`-Dateien gespeichert und geladen werden (inkl. Sortierfunktion nach Datum, ID oder Kontostand).
 
 
