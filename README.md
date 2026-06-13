@@ -56,5 +56,12 @@ Das Spiel kann komplett mit der Maus oder (für den Spielfluss deutlich angenehm
 
 *   resources/ - Beinhaltet die grafischen Assets (Karten, Rückseiten, Tisch).
 
+## Quellen der Bilder
+
+*   Fragezeichen: https://imgs.search.brave.com/2alUjflbxKg0ypddH3P9B4YF0_udLqOMsDfHUTUjcBo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzJjL2Rh/L2VkLzJjZGFlZDk4/MmRhMmJhMmNmODhm/ZTBiYmU3M2E2MDJm/LmpwZw
+
+  
+* Karten: 
+    https://www.pngwing.com/de/free-png-nnrxg  
 
    
